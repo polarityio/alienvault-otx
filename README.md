@@ -18,6 +18,9 @@ https://otx.alienvault.com
 
 This is an alternate option that can be used to specify domains or IPs that you do not want sent to AlienVaultOTX.  The data must specify the entire IP or domain to be blocked (e.g., www.google.com is treated differently than google.com).
 
+### Display No Related Pulse Information
+To display items that have no associated pulses, just chose the checkbox! 
+
 ## Installation Instructions
 
 Installation instructions for integrations are provided on the [PolarityIO GitHub Page](https://polarityio.github.io/).

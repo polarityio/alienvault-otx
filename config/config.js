@@ -1,7 +1,6 @@
 module.exports = {
     "name": "AlienVaultOTX",
     "acronym":"AVOTX",
-    "logging": { level: 'info'},
     "description": "AlienVaultOTX api integration",
     "entityTypes": ['domain', 'IPv4', 'hash'],
     "styles":[
@@ -15,6 +14,24 @@ module.exports = {
             "file": "./templates/otx-block.hbs"
         }
     },
+    "request": {
+        // Provide the path to your certFile. Leave an empty string to ignore this option.
+        // Relative paths are relative to the OTX integration's root directory
+        "cert": '',
+        // Provide the path to your private key. Leave an empty string to ignore this option.
+        // Relative paths are relative to the OTX integration's root directory
+        "key": '',
+        // Provide the key passphrase if required.  Leave an empty string to ignore this option.
+        // Relative paths are relative to the OTX integration's root directory
+        "passphrase": '',
+        // Provide the Certificate Authority. Leave an empty string to ignore this option.
+        // Relative paths are relative to the OTX integration's root directory
+        "ca": '',
+        // An HTTP proxy to be used. Supports proxy Auth with Basic Auth, identical to support for
+        // the url parameter (by embedding the auth info in the uri)
+        "proxy": ''
+    },
+    "logging": { level: 'debug'},
     "options":[
         {
             "key"         : "apiKey",
@@ -33,7 +50,15 @@ module.exports = {
             "type"        : "text",
             "userCanEdit" : false,
             "adminOnly"    : false
+        },
+        {
+            "key"         : "pulses",
+            "name"        : "Display Pulse Information",
+            "description" : "If checked, will display information with no related Pulses",
+            "default"     : false,
+            "type"        : "boolean",
+            "userCanEdit" : false,
+            "adminOnly"    : false
         }
-
     ]
 };
