@@ -5,20 +5,18 @@ let _ = require('lodash');
 let util = require('util');
 let net = require('net');
 let async = require('async');
-var log = null;
+let config = require('./config/config');
+let fs = require('fs');
+let Logger;
+let requestWithDefaults;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
 
 
-
-function startup(logger){
-    log = logger;
-}
-
 function doLookup(entities, options, cb) {
 
     var blacklist = options.blacklist;
-    log.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
+    Logger.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
 
     let entitiesWithNoData = [];
     let lookupResults = [];
@@ -38,7 +36,7 @@ function doLookup(entities, options, cb) {
                 if (err) {
                     next(err);
                 } else {
-                    lookupResults.push(result); log.debug({result: result}, "Checking the result values ");
+                    lookupResults.push(result); Logger.debug({result: result}, "Checking the result values ");
                     next(null);
                 }
             });
@@ -48,7 +46,7 @@ function doLookup(entities, options, cb) {
                 if (err) {
                     next(err);
                 } else {
-                    lookupResults.push(result); log.debug({result: result}, "Checking the result values ");
+                    lookupResults.push(result); Logger.debug({result: result}, "Checking the result values ");
                     next(null);
                 }
             });
@@ -58,7 +56,7 @@ function doLookup(entities, options, cb) {
                 if (err) {
                     next(err);
                 } else {
-                    lookupResults.push(result); log.debug({result: result}, "Checking the result values ");
+                    lookupResults.push(result); Logger.debug({result: result}, "Checking the result values ");
                     next(null);
                 }
             });
@@ -112,10 +110,10 @@ function _lookupEntity(entityObj, options, cb) {
             }
 
             if(response.statusCode === 404){
-                cb(_createJsonErrorPayload("Entity not found in DNSDB", null, '404', '2A', 'Entity not found', {
-                    err: err,
-                    entity: entityObj.value
-                }));
+              done(null, {
+                  entity: entity,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -123,14 +121,16 @@ function _lookupEntity(entityObj, options, cb) {
                 cb(body);
                 return;
             }
-            log.debug({body: body}, "Printing out the results of Body ");
+            Logger.debug({body: body}, "Printing out the results of Body ");
 
 
             if( body.length < 2){
                 return;
             }
 
-
+            if(options.pulses && body.pulse_info.count === 0){
+                return;
+            }
 
 
 
@@ -195,10 +195,10 @@ function _lookupEntityDomain(entityObj, options, cb) {
             }
 
             if(response.statusCode === 404){
-                cb(_createJsonErrorPayload("Entity not found in DNSDB", null, '404', '2A', 'Entity not found', {
-                    err: err,
-                    entity: entityObj.value
-                }));
+              done(null, {
+                  entity: entity,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -206,13 +206,16 @@ function _lookupEntityDomain(entityObj, options, cb) {
                 cb(body);
                 return;
             }
-            log.debug({body: body}, "Printing out the results of Body ");
+            Logger.debug({body: body}, "Printing out the results of Body ");
 
 
             if( body.length < 2){
                 return;
             }
 
+            if(options.pulses !=true && body.pulse_info.count === 0){
+                return;
+            }
 
 
             // The lookup results returned is an array of lookup objects with the following format
@@ -275,10 +278,10 @@ function _lookupEntityHash(entityObj, options, cb) {
             }
 
             if(response.statusCode === 404){
-                cb(_createJsonErrorPayload("Entity not found in DNSDB", null, '404', '2A', 'Entity not found', {
-                    err: err,
-                    entity: entityObj.value
-                }));
+              done(null, {
+                  entity: entity,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -286,10 +289,14 @@ function _lookupEntityHash(entityObj, options, cb) {
                 cb(body);
                 return;
             }
-            log.debug({body: body}, "Printing out the results of Body ");
+            Logger.debug({body: body}, "Printing out the results of Body ");
 
 
             if( body.length < 2){
+                return;
+            }
+
+            if(options.pulses && body.pulse_info.count === 0){
                 return;
             }
 
@@ -320,7 +327,7 @@ function validateOptions(userOptions, cb) {
         (typeof userOptions.apiKey.value === 'string' && userOptions.apiKey.value.length === 0)){
         errors.push({
             key: 'apiKey',
-            message: 'You must provide a Farsight DNSDB API key'
+            message: 'You must provide an AlienVaultOTX API key'
         })
     }
 
@@ -357,6 +364,33 @@ var _createJsonErrorObject = function (msg, pointer, httpCode, code, title, meta
 
     return error;
 };
+
+function startup(logger) {
+    Logger = logger;
+    let defaults = {};
+
+    if (typeof config.request.cert === 'string' && config.request.cert.length > 0) {
+        defaults.cert = fs.readFileSync(config.request.cert);
+    }
+
+    if (typeof config.request.key === 'string' && config.request.key.length > 0) {
+        defaults.key = fs.readFileSync(config.request.key);
+    }
+
+    if (typeof config.request.passphrase === 'string' && config.request.passphrase.length > 0) {
+        defaults.passphrase = config.request.passphrase;
+    }
+
+    if (typeof config.request.ca === 'string' && config.request.ca.length > 0) {
+        defaults.ca = fs.readFileSync(config.request.ca);
+    }
+
+    if (typeof config.request.proxy === 'string' && config.request.proxy.length > 0) {
+        defaults.proxy = config.request.proxy;
+    }
+
+    requestWithDefaults = request.defaults(defaults);
+}
 
 module.exports = {
     doLookup: doLookup,
