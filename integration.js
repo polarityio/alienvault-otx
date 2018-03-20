@@ -9,8 +9,39 @@ let config = require('./config/config');
 let fs = require('fs');
 let Logger;
 let requestWithDefaults;
+let previousDomainRegexAsString = '';
+let previousIpRegexAsString = '';
+let domainBlacklistRegex = null;
+let ipBlacklistRegex = null;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
+
+
+function _setupRegexBlacklists(options){
+    if (options.domainBlacklistRegex !== previousDomainRegexAsString && options.domainBlacklistRegex.length === 0) {
+        log.debug("Removing Domain Blacklist Regex Filtering");
+        previousDomainRegexAsString = '';
+        domainBlacklistRegex = null;
+    } else {
+        if (options.domainBlacklistRegex !== previousDomainRegexAsString) {
+            previousDomainRegexAsString = options.domainBlacklistRegex;
+            log.debug({domainBlacklistRegex: previousDomainRegexAsString}, "Modifying Domain Blacklist Regex");
+            domainBlacklistRegex = new RegExp(options.domainBlacklistRegex, 'i');
+        }
+    }
+
+    if (options.ipBlacklistRegex !== previousIpRegexAsString && options.ipBlacklistRegex.length === 0) {
+        log.debug("Removing IP Blacklist Regex Filtering");
+        previousIpRegexAsString = '';
+        ipBlacklistRegex = null;
+    } else {
+        if (options.ipBlacklistRegex !== previousIpRegexAsString) {
+            previousIpRegexAsString = options.ipBlacklistRegex;
+            log.debug({ipBlacklistRegex: previousIpRegexAsString}, "Modifying IP Blacklist Regex");
+            ipBlacklistRegex = new RegExp(options.ipBlacklistRegex, 'i');
+        }
+    }
+}
 
 
 function doLookup(entities, options, cb) {
@@ -27,11 +58,20 @@ function doLookup(entities, options, cb) {
     }
 
     async.each(entities, function (entityObj, next) {
+
+      _setupRegexBlacklists(options);
+
         if (_.includes(blacklist, entityObj.value)) {
                 rnext(null);
         }
-        else if (entityObj.isIPv4)// && options.lookupDomain)
+        else if (entityObj.isIPv4 && !entityObj.isPrivateIP)
          {
+           if (ipBlacklistRegex !== null) {
+                if (ipBlacklistRegex.test(entityObj.value)) {
+                    log.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
+                    return next(null);
+                }
+            }
             _lookupEntity(entityObj, options, function (err, result) {
                 if (err) {
                     next(err);
@@ -52,6 +92,12 @@ function doLookup(entities, options, cb) {
             });
         } else if (entityObj.isDomain)
         {
+          if (domainBlacklistRegex !== null) {
+                if (domainBlacklistRegex.test(entityObj.value)) {
+                    log.debug({domain: entityObj.value}, 'Blocked BlackListed Domain Lookup');
+                    return next(null);
+                }
+            }
             _lookupEntityDomain(entityObj, options, function (err, result) {
                 if (err) {
                     next(err);
@@ -117,6 +163,14 @@ function _lookupEntity(entityObj, options, cb) {
                 return;
             }
 
+            if(response.statusCode === 400){
+              done(null, {
+                  entity: entity,
+                  data: null // this entity will be cached as a miss
+                });
+                return;
+            }
+
             if (response.statusCode !== 200) {
                 cb(body);
                 return;
@@ -128,7 +182,11 @@ function _lookupEntity(entityObj, options, cb) {
                 return;
             }
 
-            if(options.pulses && body.pulse_info.count === 0){
+            if(!options.pulses && body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -202,6 +260,16 @@ function _lookupEntityDomain(entityObj, options, cb) {
                 return;
             }
 
+            if(response.statusCode === 400){
+              done(null, {
+                  entity: entity,
+                  data: null // this entity will be cached as a miss
+                });
+                return;
+            }
+
+
+
             if (response.statusCode !== 200) {
                 cb(body);
                 return;
@@ -214,6 +282,18 @@ function _lookupEntityDomain(entityObj, options, cb) {
             }
 
             if(options.pulses !=true && body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
+                return;
+            }
+
+            if(body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -285,6 +365,14 @@ function _lookupEntityHash(entityObj, options, cb) {
                 return;
             }
 
+            if(response.statusCode === 400){
+              done(null, {
+                  entity: entity,
+                  data: null // this entity will be cached as a miss
+                });
+                return;
+            }
+
             if (response.statusCode !== 200) {
                 cb(body);
                 return;
@@ -296,7 +384,11 @@ function _lookupEntityHash(entityObj, options, cb) {
                 return;
             }
 
-            if(options.pulses && body.pulse_info.count === 0){
+            if(!options.pulses && body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
