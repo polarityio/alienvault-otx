@@ -71,9 +71,9 @@ module.exports = {
         },
         {
             "key"         : "pulses",
-            "name"        : "Display Pulse Information",
-            "description" : "If checked, will display information with no related Pulses",
-            "default"     : false,
+            "name"        : "Do Not Display, when no Pulses exsist",
+            "description" : "If checked, will not display information with no related Pulses",
+            "default"     : true,
             "type"        : "boolean",
             "userCanEdit" : false,
             "adminOnly"    : false
