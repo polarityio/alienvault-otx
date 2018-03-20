@@ -9,8 +9,39 @@ let config = require('./config/config');
 let fs = require('fs');
 let Logger;
 let requestWithDefaults;
+let previousDomainRegexAsString = '';
+let previousIpRegexAsString = '';
+let domainBlacklistRegex = null;
+let ipBlacklistRegex = null;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
+
+
+function _setupRegexBlacklists(options){
+    if (options.domainBlacklistRegex !== previousDomainRegexAsString && options.domainBlacklistRegex.length === 0) {
+        log.debug("Removing Domain Blacklist Regex Filtering");
+        previousDomainRegexAsString = '';
+        domainBlacklistRegex = null;
+    } else {
+        if (options.domainBlacklistRegex !== previousDomainRegexAsString) {
+            previousDomainRegexAsString = options.domainBlacklistRegex;
+            log.debug({domainBlacklistRegex: previousDomainRegexAsString}, "Modifying Domain Blacklist Regex");
+            domainBlacklistRegex = new RegExp(options.domainBlacklistRegex, 'i');
+        }
+    }
+
+    if (options.ipBlacklistRegex !== previousIpRegexAsString && options.ipBlacklistRegex.length === 0) {
+        log.debug("Removing IP Blacklist Regex Filtering");
+        previousIpRegexAsString = '';
+        ipBlacklistRegex = null;
+    } else {
+        if (options.ipBlacklistRegex !== previousIpRegexAsString) {
+            previousIpRegexAsString = options.ipBlacklistRegex;
+            log.debug({ipBlacklistRegex: previousIpRegexAsString}, "Modifying IP Blacklist Regex");
+            ipBlacklistRegex = new RegExp(options.ipBlacklistRegex, 'i');
+        }
+    }
+}
 
 
 function doLookup(entities, options, cb) {
@@ -27,11 +58,20 @@ function doLookup(entities, options, cb) {
     }
 
     async.each(entities, function (entityObj, next) {
+
+      _setupRegexBlacklists(options);
+
         if (_.includes(blacklist, entityObj.value)) {
                 rnext(null);
         }
-        else if (entityObj.isIPv4)// && options.lookupDomain)
+        else if (entityObj.isIPv4 && !entityObj.isPrivateIP)
          {
+           if (ipBlacklistRegex !== null) {
+                if (ipBlacklistRegex.test(entityObj.value)) {
+                    log.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
+                    return next(null);
+                }
+            }
             _lookupEntity(entityObj, options, function (err, result) {
                 if (err) {
                     next(err);
@@ -52,6 +92,12 @@ function doLookup(entities, options, cb) {
             });
         } else if (entityObj.isDomain)
         {
+          if (domainBlacklistRegex !== null) {
+                if (domainBlacklistRegex.test(entityObj.value)) {
+                    log.debug({domain: entityObj.value}, 'Blocked BlackListed Domain Lookup');
+                    return next(null);
+                }
+            }
             _lookupEntityDomain(entityObj, options, function (err, result) {
                 if (err) {
                     next(err);
@@ -71,8 +117,9 @@ function doLookup(entities, options, cb) {
 
 
 function _lookupEntity(entityObj, options, cb) {
-    if(entityObj.value)
-        request({
+
+
+  let requestOptions = {
             uri: BASE_URI + '/IPv4/' + entityObj.value.toLowerCase() + '/general',
             method: 'GET',
             headers: {
@@ -80,47 +127,22 @@ function _lookupEntity(entityObj, options, cb) {
                 'Accept': 'application/json'
             },
             json: true
-        }, function (err, response, body) {
-            if (err) {
-                cb(err);
-                return;
-            }
+        };
 
-            if(response.statusCode === 503){
-                cb(_createJsonErrorPayload("Limit of number of concurrent connections is exceeded for AlienVaultOTX", null, '503', '2A', 'Concurrent Connections Exceeded', {
-                    err: err
-                }));
-                return;
-            }
+        requestWithDefaults(requestOptions, function (err, response, body) {
+        let errorObject = _isApiError(err, response, body, entityObj.value);
+        if (errorObject) {
+            cb(errorObject);
+            return;
+        }
 
-
-            if(response.statusCode === 500){
-                cb(_createJsonErrorPayload("Error processing your request", null, '500', '2A', 'Internal Server Error', {
-                    err: err,
-                    entity: entityObj.value
-                }));
-                return;
-            }
-
-            if(response.statusCode === 403){
-                cb(_createJsonErrorPayload("You do not have permission to access AlienVaultOTX. Please check your API key", null, '403', '2A', 'Permission Denied', {
-                    err: err
-                }));
-                return;
-            }
-
-            if(response.statusCode === 404){
-              done(null, {
-                  entity: entity,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-            if (response.statusCode !== 200) {
-                cb(body);
-                return;
-            }
+        if (_isLookupMiss(response)) {
+        cb(null, {
+            entity: entityObj,
+            data: null
+        });
+        return;
+    }
             Logger.debug({body: body}, "Printing out the results of Body ");
 
 
@@ -129,6 +151,10 @@ function _lookupEntity(entityObj, options, cb) {
             }
 
             if(options.pulses && body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -156,8 +182,8 @@ function _lookupEntity(entityObj, options, cb) {
 
 function _lookupEntityDomain(entityObj, options, cb) {
 
-    if(entityObj.value)
-        request({
+
+      let requestOptions = {
             uri: BASE_URI + '/domain/' + entityObj.value.toLowerCase() + '/general',
             method: 'GET',
             headers: {
@@ -165,47 +191,22 @@ function _lookupEntityDomain(entityObj, options, cb) {
                 'Accept': 'application/json'
             },
             json: true
-        }, function (err, response, body) {
-            if (err) {
-                cb(err);
-                return;
-            }
+        };
 
-            if(response.statusCode === 503){
-                cb(_createJsonErrorPayload("Limit of number of concurrent connections is exceeded for AlienVaultOTX", null, '503', '2A', 'Concurrent Connections Exceeded', {
-                    err: err
-                }));
-                return;
-            }
+        requestWithDefaults(requestOptions, function (err, response, body) {
+        let errorObject = _isApiError(err, response, body, entityObj.value);
+        if (errorObject) {
+            cb(errorObject);
+            return;
+        }
 
-
-            if(response.statusCode === 500){
-                cb(_createJsonErrorPayload("Error processing your request", null, '500', '2A', 'Internal Server Error', {
-                    err: err,
-                    entity: entityObj.value
-                }));
-                return;
-            }
-
-            if(response.statusCode === 403){
-                cb(_createJsonErrorPayload("You do not have permission to access AlienVaultOTX. Please check your API key", null, '403', '2A', 'Permission Denied', {
-                    err: err
-                }));
-                return;
-            }
-
-            if(response.statusCode === 404){
-              done(null, {
-                  entity: entity,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-            if (response.statusCode !== 200) {
-                cb(body);
-                return;
-            }
+        if (_isLookupMiss(response)) {
+        cb(null, {
+            entity: entityObj,
+            data: null
+        });
+        return;
+    }
             Logger.debug({body: body}, "Printing out the results of Body ");
 
 
@@ -214,6 +215,18 @@ function _lookupEntityDomain(entityObj, options, cb) {
             }
 
             if(options.pulses !=true && body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
+                return;
+            }
+
+            if(body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -239,8 +252,8 @@ function _lookupEntityDomain(entityObj, options, cb) {
 
 function _lookupEntityHash(entityObj, options, cb) {
 
-    if(entityObj.value)
-        request({
+
+      let requestOptions = {
             uri: BASE_URI + '/file/' + entityObj.value.toLowerCase() + '/general',
             method: 'GET',
             headers: {
@@ -248,47 +261,22 @@ function _lookupEntityHash(entityObj, options, cb) {
                 'Accept': 'application/json'
             },
             json: true
-        }, function (err, response, body) {
-            if (err) {
-                cb(err);
-                return;
-            }
+        };
 
-            if(response.statusCode === 503){
-                cb(_createJsonErrorPayload("Limit of number of concurrent connections is exceeded for AlienVaultOTX", null, '503', '2A', 'Concurrent Connections Exceeded', {
-                    err: err
-                }));
-                return;
-            }
+        requestWithDefaults(requestOptions, function (err, response, body) {
+        let errorObject = _isApiError(err, response, body, entityObj.value);
+        if (errorObject) {
+            cb(errorObject);
+            return;
+        }
 
-
-            if(response.statusCode === 500){
-                cb(_createJsonErrorPayload("Error processing your request", null, '500', '2A', 'Internal Server Error', {
-                    err: err,
-                    entity: entityObj.value
-                }));
-                return;
-            }
-
-            if(response.statusCode === 403){
-                cb(_createJsonErrorPayload("You do not have permission to access AlienVaultOTX. Please check your API key", null, '403', '2A', 'Permission Denied', {
-                    err: err
-                }));
-                return;
-            }
-
-            if(response.statusCode === 404){
-              done(null, {
-                  entity: entity,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-            if (response.statusCode !== 200) {
-                cb(body);
-                return;
-            }
+        if (_isLookupMiss(response)) {
+        cb(null, {
+            entity: entityObj,
+            data: null
+        });
+        return;
+    }
             Logger.debug({body: body}, "Printing out the results of Body ");
 
 
@@ -297,6 +285,10 @@ function _lookupEntityHash(entityObj, options, cb) {
             }
 
             if(options.pulses && body.pulse_info.count === 0){
+              cb(null, {
+                  entity: entityObj,
+                  data: null // this entity will be cached as a miss
+                });
                 return;
             }
 
@@ -321,6 +313,31 @@ function _lookupEntityHash(entityObj, options, cb) {
             });
         });
 }
+
+
+function _isLookupMiss(response) {
+    return response.statusCode === 404 || response.statusCode === 500 || response.statusCode === 400;
+}
+
+function _isApiError(err, response, body, entityValue) {
+    if (err) {
+        return err;
+    }
+
+    if (response.statusCode === 500) {
+        return _createJsonErrorPayload("Malinformed Request", null, '500', '1', 'Malinformed Request', {
+            err: err
+        });
+    }
+
+    // Any code that is not 200 and not 404 (missed response) or 400, we treat as an error
+    if (response.statusCode !== 200 && response.statusCode !== 404 && response.statusCode !== 400) {
+        return body;
+    }
+
+    return null;
+}
+
 function validateOptions(userOptions, cb) {
     let errors = [];
     if(typeof userOptions.apiKey.value !== 'string' ||
