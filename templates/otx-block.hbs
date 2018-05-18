@@ -114,9 +114,9 @@
                     {{/if}}
 
                     {{#if pulse.description}}
-                        <div>
-                            <span class="p-key">Description:</span>
-                            <span class="p-value">{{pulse.description}}</span>
+                        <div class="description-container">
+                            <span class="p-key">Description - </span>
+                            <span class="">{{pulse.description}}</span>
                         </div>
                     {{/if}}
 
@@ -132,13 +132,16 @@
                     {{/if}}
 
                     {{#if pulse.references}}
-                        <div>
+                        <div class="references-container">
                             <span class="p-key">References: </span>
-                            {{#each (limit pulse.references maxReferences) as |data|}}
-                                <div>
-                                    <i class="fa fa-external-link-square fa-fw p-grey"></i>
-                                    <a class="p-link reference" href="{{data}}">{{data}}</a>
-                                </div>
+                            {{#each (limit pulse.references maxReferences) as |reference|}}
+                                {{!-- There seem to be a large number of empty string references so skipping those --}}
+                                {{#if (gt reference.length 0)}}
+                                    <div>
+                                        <i class="fa fa-external-link-square fa-fw p-grey"></i>
+                                        <a class="p-link reference" href="{{reference}}">{{reference}}</a>
+                                    </div>
+                                {{/if}}
                             {{/each}}
                             {{#if (gt pulse.references.length maxReferences)}}
                                 <span class="p-footnote">(Not all references shown)</span>
