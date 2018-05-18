@@ -239,6 +239,7 @@ function _lookupEntityHash(entityObj, options, cb) {
             });
             return;
         }
+
         Logger.debug({body: body}, "Printing out the results of Body ");
 
         if (options.pulses === true && body.pulse_info.count === 0) {
@@ -271,11 +272,14 @@ function _isLookupMiss(response) {
 
 function _isApiError(err, response, body, entityValue) {
     if (err) {
-        return err;
+        return {
+            detail: 'Error executing HTTP request',
+            error: err
+        };
     }
 
     if (response.statusCode === 500) {
-        return _createJsonErrorPayload("Malinformed Request", null, '500', '1', 'Malinformed Request', {
+        return _createJsonErrorPayload("Malformed Request", null, '500', '1', 'Malformed Request', {
             err: err
         });
     }
