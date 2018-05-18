@@ -364,7 +364,7 @@ var _createJsonErrorObject = function (msg, pointer, httpCode, code, title, meta
         detail: msg,
         status: httpCode.toString(),
         title: title,
-        code: 'DNSDB_' + code.toString()
+        code: 'OTX_' + code.toString()
     };
 
     if (pointer) {
