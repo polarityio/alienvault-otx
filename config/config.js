@@ -32,13 +32,13 @@ module.exports = {
         // the url parameter (by embedding the auth info in the uri)
         "proxy": ''
     },
-    "logging": { level: 'debug'},
+    "logging": { level: 'info'},
     "options":[
         {
             "key"         : "apiKey",
             "name"        : "API Key",
             "description" : "AlienVaultOTX API key",
-            "default"     : "default value",
+            "default"     : "",
             "type"        : "text",
             "userCanEdit" : false,
             "adminOnly"    : false
