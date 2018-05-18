@@ -71,8 +71,8 @@ module.exports = {
         },
         {
             "key"         : "pulses",
-            "name"        : "Do Not Display, when no Pulses exsist",
-            "description" : "If checked, will not display information with no related Pulses",
+            "name"        : "Hide Results without Pulses",
+            "description" : "If checked, the integration will not display a result if there are no related Pulses",
             "default"     : true,
             "type"        : "boolean",
             "userCanEdit" : false,
