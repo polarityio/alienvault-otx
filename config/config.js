@@ -4,7 +4,8 @@ module.exports = {
     "description": "AlienVaultOTX api integration",
     "entityTypes": ['domain', 'IPv4', 'hash'],
     "styles":[
-        "./styles/otx.less"
+        "./styles/otx.less",
+        "./styles/exfoliate.less"
     ],
     "block": {
         "component": {
@@ -31,13 +32,13 @@ module.exports = {
         // the url parameter (by embedding the auth info in the uri)
         "proxy": ''
     },
-    "logging": { level: 'debug'},
+    "logging": { level: 'info'},
     "options":[
         {
             "key"         : "apiKey",
             "name"        : "API Key",
             "description" : "AlienVaultOTX API key",
-            "default"     : "default value",
+            "default"     : "",
             "type"        : "text",
             "userCanEdit" : false,
             "adminOnly"    : false
@@ -71,8 +72,8 @@ module.exports = {
         },
         {
             "key"         : "pulses",
-            "name"        : "Do Not Display, when no Pulses exsist",
-            "description" : "If checked, will not display information with no related Pulses",
+            "name"        : "Hide Results without Pulses",
+            "description" : "If checked, the integration will not display a result if there are no related Pulses",
             "default"     : true,
             "type"        : "boolean",
             "userCanEdit" : false,

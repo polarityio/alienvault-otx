@@ -2,11 +2,10 @@
 
 let request = require('request');
 let _ = require('lodash');
-let util = require('util');
-let net = require('net');
 let async = require('async');
 let config = require('./config/config');
 let fs = require('fs');
+
 let Logger;
 let requestWithDefaults;
 let previousDomainRegexAsString = '';
@@ -16,59 +15,49 @@ let ipBlacklistRegex = null;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
 
-
-function _setupRegexBlacklists(options){
+function _setupRegexBlacklists(options) {
     if (options.domainBlacklistRegex !== previousDomainRegexAsString && options.domainBlacklistRegex.length === 0) {
-        log.debug("Removing Domain Blacklist Regex Filtering");
+        Logger.debug("Removing Domain Blacklist Regex Filtering");
         previousDomainRegexAsString = '';
         domainBlacklistRegex = null;
     } else {
         if (options.domainBlacklistRegex !== previousDomainRegexAsString) {
             previousDomainRegexAsString = options.domainBlacklistRegex;
-            log.debug({domainBlacklistRegex: previousDomainRegexAsString}, "Modifying Domain Blacklist Regex");
+            Logger.debug({domainBlacklistRegex: previousDomainRegexAsString}, "Modifying Domain Blacklist Regex");
             domainBlacklistRegex = new RegExp(options.domainBlacklistRegex, 'i');
         }
     }
 
     if (options.ipBlacklistRegex !== previousIpRegexAsString && options.ipBlacklistRegex.length === 0) {
-        log.debug("Removing IP Blacklist Regex Filtering");
+        Logger.debug("Removing IP Blacklist Regex Filtering");
         previousIpRegexAsString = '';
         ipBlacklistRegex = null;
     } else {
         if (options.ipBlacklistRegex !== previousIpRegexAsString) {
             previousIpRegexAsString = options.ipBlacklistRegex;
-            log.debug({ipBlacklistRegex: previousIpRegexAsString}, "Modifying IP Blacklist Regex");
+            Logger.debug({ipBlacklistRegex: previousIpRegexAsString}, "Modifying IP Blacklist Regex");
             ipBlacklistRegex = new RegExp(options.ipBlacklistRegex, 'i');
         }
     }
 }
 
-
 function doLookup(entities, options, cb) {
 
-    var blacklist = options.blacklist;
-    Logger.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
-
-    let entitiesWithNoData = [];
+    let blacklist = options.blacklist;
     let lookupResults = [];
 
-    if(typeof(options.apiKey) !== 'string' || options.apiKey.length === 0){
-        cb("The API key is not set.");
-        return;
-    }
+    Logger.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
 
     async.each(entities, function (entityObj, next) {
 
-      _setupRegexBlacklists(options);
+        _setupRegexBlacklists(options);
 
         if (_.includes(blacklist, entityObj.value)) {
-                rnext(null);
-        }
-        else if (entityObj.isIPv4 && !entityObj.isPrivateIP)
-         {
-           if (ipBlacklistRegex !== null) {
+            next(null);
+        } else if (entityObj.isIPv4 && !entityObj.isPrivateIP) {
+            if (ipBlacklistRegex !== null) {
                 if (ipBlacklistRegex.test(entityObj.value)) {
-                    log.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
+                    Logger.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
                     return next(null);
                 }
             }
@@ -76,25 +65,25 @@ function doLookup(entities, options, cb) {
                 if (err) {
                     next(err);
                 } else {
-                    lookupResults.push(result); Logger.debug({result: result}, "Checking the result values ");
+                    lookupResults.push(result);
+                    Logger.debug({result: result}, "Checking the result values ");
                     next(null);
                 }
             });
-        } else if (entityObj.isHash)
-        {
+        } else if (entityObj.isHash) {
             _lookupEntityHash(entityObj, options, function (err, result) {
                 if (err) {
                     next(err);
                 } else {
-                    lookupResults.push(result); Logger.debug({result: result}, "Checking the result values ");
+                    lookupResults.push(result);
+                    Logger.debug({result: result}, "Checking the result values ");
                     next(null);
                 }
             });
-        } else if (entityObj.isDomain)
-        {
-          if (domainBlacklistRegex !== null) {
+        } else if (entityObj.isDomain) {
+            if (domainBlacklistRegex !== null) {
                 if (domainBlacklistRegex.test(entityObj.value)) {
-                    log.debug({domain: entityObj.value}, 'Blocked BlackListed Domain Lookup');
+                    Logger.debug({domain: entityObj.value}, 'Blocked BlackListed Domain Lookup');
                     return next(null);
                 }
             }
@@ -102,11 +91,12 @@ function doLookup(entities, options, cb) {
                 if (err) {
                     next(err);
                 } else {
-                    lookupResults.push(result); Logger.debug({result: result}, "Checking the result values ");
+                    lookupResults.push(result);
+                    Logger.debug({result: result}, "Checking the result values ");
                     next(null);
                 }
             });
-        }else {
+        } else {
             lookupResults.push({entity: entityObj, data: null}); //Cache the missed results
             next(null);
         }
@@ -119,17 +109,17 @@ function doLookup(entities, options, cb) {
 function _lookupEntity(entityObj, options, cb) {
 
 
-  let requestOptions = {
-            uri: BASE_URI + '/IPv4/' + entityObj.value.toLowerCase() + '/general',
-            method: 'GET',
-            headers: {
-                'X-OTX-API-KEY': options.apiKey,
-                'Accept': 'application/json'
-            },
-            json: true
-        };
+    let requestOptions = {
+        uri: BASE_URI + '/IPv4/' + entityObj.value.toLowerCase() + '/general',
+        method: 'GET',
+        headers: {
+            'X-OTX-API-KEY': options.apiKey,
+            'Accept': 'application/json'
+        },
+        json: true
+    };
 
-        requestWithDefaults(requestOptions, function (err, response, body) {
+    requestWithDefaults(requestOptions, function (err, response, body) {
         let errorObject = _isApiError(err, response, body, entityObj.value);
         if (errorObject) {
             cb(errorObject);
@@ -137,63 +127,50 @@ function _lookupEntity(entityObj, options, cb) {
         }
 
         if (_isLookupMiss(response)) {
-        cb(null, {
-            entity: entityObj,
-            data: null
-        });
-        return;
-    }
-            Logger.debug({body: body}, "Printing out the results of Body ");
-
-
-            if( body.length < 2){
-                return;
-            }
-
-            if(options.pulses && body.pulse_info.count === 0){
-              cb(null, {
-                  entity: entityObj,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-
-
-            // The lookup results returned is an array of lookup objects with the following format
             cb(null, {
-                // Required: This is the entity object passed into the integration doLookup method
                 entity: entityObj,
-                // Required: An object containing everything you want passed to the template
-                data: {
-                    // Required: this is the string value that is displayed in the template
-                    entity_name: entityObj.value,
-                    // Required: These are the tags that are displayed in your template
-                    summary: ["Number of Pulses:" + " " + body.pulse_info.count],
-                    // Data that you want to pass back to the notification window details block
-                    details: {
-                        bodyObjects: body
-
-                    }
-                }
+                data: null
             });
+            return;
+        }
+        Logger.debug({body: body}, "Printing out the results of Body ");
+
+        if (options.pulses === true && body.pulse_info.count === 0) {
+            cb(null, {
+                entity: entityObj,
+                data: null // this entity will be cached as a miss
+            });
+            return;
+        }
+
+        // The lookup results returned is an array of lookup objects with the following format
+        cb(null, {
+            // Required: This is the entity object passed into the integration doLookup method
+            entity: entityObj,
+            // Required: An object containing everything you want passed to the template
+            data: {
+                // Required: These are the tags that are displayed in your template
+                summary: [body.pulse_info.count + (body.pulse_info.count === 1 ? " pulse" : " pulses")],
+                // Data that you want to pass back to the notification window details block
+                details: body
+            }
         });
+    });
 }
 
 function _lookupEntityDomain(entityObj, options, cb) {
 
+    let requestOptions = {
+        uri: BASE_URI + '/domain/' + entityObj.value.toLowerCase() + '/general',
+        method: 'GET',
+        headers: {
+            'X-OTX-API-KEY': options.apiKey,
+            'Accept': 'application/json'
+        },
+        json: true
+    };
 
-      let requestOptions = {
-            uri: BASE_URI + '/domain/' + entityObj.value.toLowerCase() + '/general',
-            method: 'GET',
-            headers: {
-                'X-OTX-API-KEY': options.apiKey,
-                'Accept': 'application/json'
-            },
-            json: true
-        };
-
-        requestWithDefaults(requestOptions, function (err, response, body) {
+    requestWithDefaults(requestOptions, function (err, response, body) {
         let errorObject = _isApiError(err, response, body, entityObj.value);
         if (errorObject) {
             cb(errorObject);
@@ -201,69 +178,54 @@ function _lookupEntityDomain(entityObj, options, cb) {
         }
 
         if (_isLookupMiss(response)) {
-        cb(null, {
-            entity: entityObj,
-            data: null
-        });
-        return;
-    }
-            Logger.debug({body: body}, "Printing out the results of Body ");
-
-
-            if( body.length < 2){
-                return;
-            }
-
-            if(options.pulses !=true && body.pulse_info.count === 0){
-              cb(null, {
-                  entity: entityObj,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-            if(body.pulse_info.count === 0){
-              cb(null, {
-                  entity: entityObj,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-
-            // The lookup results returned is an array of lookup objects with the following format
             cb(null, {
-                // Required: This is the entity object passed into the integration doLookup method
                 entity: entityObj,
-                // Required: An object containing everything you want passed to the template
-                data: {
-                    // Required: this is the string value that is displayed in the template
-                    entity_name: entityObj.value,
-                    // Required: These are the tags that are displayed in your template
-                    summary: ["Number of Pulses:" + " " + body.pulse_info.count],
-                    // Data that you want to pass back to the notification window details block
-                    details: {
-                        bodyObjects: body
-                    }
-                }
+                data: null
             });
+            return;
+        }
+        Logger.debug({
+            "options.pulses": options.pulses,
+            pulseCount: body.pulse_info.count,
+            body: body
+        }, "Printing out the results of Body ");
+
+        if (options.pulses === true && body.pulse_info.count === 0) {
+            cb(null, {
+                entity: entityObj,
+                data: null // this entity will be cached as a miss
+            });
+            return;
+        }
+
+        // The lookup results returned is an array of lookup objects with the following format
+        cb(null, {
+            // Required: This is the entity object passed into the integration doLookup method
+            entity: entityObj,
+            // Required: An object containing everything you want passed to the template
+            data: {
+                // Required: These are the tags that are displayed in your template
+                summary: [body.pulse_info.count + (body.pulse_info.count === 1 ? " pulse" : " pulses")],
+                // Data that you want to pass back to the notification window details block
+                details: body
+            }
         });
+    });
 }
 
 function _lookupEntityHash(entityObj, options, cb) {
 
+    let requestOptions = {
+        uri: BASE_URI + '/file/' + entityObj.value.toLowerCase() + '/general',
+        method: 'GET',
+        headers: {
+            'X-OTX-API-KEY': options.apiKey,
+            'Accept': 'application/json'
+        },
+        json: true
+    };
 
-      let requestOptions = {
-            uri: BASE_URI + '/file/' + entityObj.value.toLowerCase() + '/general',
-            method: 'GET',
-            headers: {
-                'X-OTX-API-KEY': options.apiKey,
-                'Accept': 'application/json'
-            },
-            json: true
-        };
-
-        requestWithDefaults(requestOptions, function (err, response, body) {
+    requestWithDefaults(requestOptions, function (err, response, body) {
         let errorObject = _isApiError(err, response, body, entityObj.value);
         if (errorObject) {
             cb(errorObject);
@@ -271,47 +233,35 @@ function _lookupEntityHash(entityObj, options, cb) {
         }
 
         if (_isLookupMiss(response)) {
-        cb(null, {
-            entity: entityObj,
-            data: null
-        });
-        return;
-    }
-            Logger.debug({body: body}, "Printing out the results of Body ");
-
-
-            if( body.length < 2){
-                return;
-            }
-
-            if(options.pulses && body.pulse_info.count === 0){
-              cb(null, {
-                  entity: entityObj,
-                  data: null // this entity will be cached as a miss
-                });
-                return;
-            }
-
-
-
-            // The lookup results returned is an array of lookup objects with the following format
             cb(null, {
-                // Required: This is the entity object passed into the integration doLookup method
                 entity: entityObj,
-                // Required: An object containing everything you want passed to the template
-                data: {
-                    // Required: this is the string value that is displayed in the template
-                    entity_name: entityObj.value,
-                    // Required: These are the tags that are displayed in your template
-                    summary: ["Number of Pulses:" + " " + body.pulse_info.count],
-                    // Data that you want to pass back to the notification window details block
-                    details: {
-                        bodyObjects: body
-
-                    }
-                }
+                data: null
             });
+            return;
+        }
+        Logger.debug({body: body}, "Printing out the results of Body ");
+
+        if (options.pulses === true && body.pulse_info.count === 0) {
+            cb(null, {
+                entity: entityObj,
+                data: null // this entity will be cached as a miss
+            });
+            return;
+        }
+
+        // The lookup results returned is an array of lookup objects with the following format
+        cb(null, {
+            // Required: This is the entity object passed into the integration doLookup method
+            entity: entityObj,
+            // Required: An object containing everything you want passed to the template
+            data: {
+                // Required: These are the tags that are displayed in your template
+                summary: [body.pulse_info.count + (body.pulse_info.count === 1 ? " pulse" : " pulses")],
+                // Data that you want to pass back to the notification window details block
+                details: body
+            }
         });
+    });
 }
 
 
@@ -340,12 +290,36 @@ function _isApiError(err, response, body, entityValue) {
 
 function validateOptions(userOptions, cb) {
     let errors = [];
-    if(typeof userOptions.apiKey.value !== 'string' ||
-        (typeof userOptions.apiKey.value === 'string' && userOptions.apiKey.value.length === 0)){
+    if (typeof userOptions.apiKey.value !== 'string' ||
+        (typeof userOptions.apiKey.value === 'string' && userOptions.apiKey.value.length === 0)) {
         errors.push({
             key: 'apiKey',
             message: 'You must provide an AlienVaultOTX API key'
         })
+    }
+
+    if(typeof userOptions.domainBlacklistRegex.value === 'string' && userOptions.domainBlacklistRegex.value.length > 0){
+        try{
+            new RegExp(userOptions.domainBlacklistRegex.value);
+        }
+        catch(error){
+            errors.push({
+                key: 'domainBlacklistRegex',
+                message: error.toString()
+            });
+        }
+    }
+
+    if(typeof userOptions.ipBlacklistRegex.value === 'string' && userOptions.ipBlacklistRegex.value.length > 0){
+        try{
+            new RegExp(userOptions.ipBlacklistRegex.value);
+        }
+        catch(e){
+            errors.push({
+                key: 'ipBlacklistRegex',
+                message: error.toString()
+            });
+        }
     }
 
     cb(null, errors);
@@ -366,7 +340,7 @@ var _createJsonErrorObject = function (msg, pointer, httpCode, code, title, meta
         detail: msg,
         status: httpCode.toString(),
         title: title,
-        code: 'DNSDB_' + code.toString()
+        code: 'OTX_' + code.toString()
     };
 
     if (pointer) {
