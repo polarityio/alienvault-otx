@@ -5,6 +5,7 @@ let _ = require('lodash');
 let async = require('async');
 let config = require('./config/config');
 let fs = require('fs');
+
 let Logger;
 let requestWithDefaults;
 let previousDomainRegexAsString = '';
@@ -44,16 +45,10 @@ function _setupRegexBlacklists(options) {
 
 function doLookup(entities, options, cb) {
 
-    var blacklist = options.blacklist;
-    Logger.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
-
-    let entitiesWithNoData = [];
+    let blacklist = options.blacklist;
     let lookupResults = [];
 
-    if (typeof(options.apiKey) !== 'string' || options.apiKey.length === 0) {
-        cb("The API key is not set.");
-        return;
-    }
+    Logger.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
 
     async.each(entities, function (entityObj, next) {
 
@@ -61,8 +56,7 @@ function doLookup(entities, options, cb) {
 
         if (_.includes(blacklist, entityObj.value)) {
             next(null);
-        }
-        else if (entityObj.isIPv4 && !entityObj.isPrivateIP) {
+        } else if (entityObj.isIPv4 && !entityObj.isPrivateIP) {
             if (ipBlacklistRegex !== null) {
                 if (ipBlacklistRegex.test(entityObj.value)) {
                     Logger.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
@@ -143,11 +137,6 @@ function _lookupEntity(entityObj, options, cb) {
         }
         Logger.debug({body: body}, "Printing out the results of Body ");
 
-
-        if (body.length < 2) {
-            return;
-        }
-
         if (options.pulses && body.pulse_info.count === 0) {
             cb(null, {
                 entity: entityObj,
@@ -156,22 +145,16 @@ function _lookupEntity(entityObj, options, cb) {
             return;
         }
 
-
         // The lookup results returned is an array of lookup objects with the following format
         cb(null, {
             // Required: This is the entity object passed into the integration doLookup method
             entity: entityObj,
             // Required: An object containing everything you want passed to the template
             data: {
-                // Required: this is the string value that is displayed in the template
-                entity_name: entityObj.value,
                 // Required: These are the tags that are displayed in your template
-                summary: ["Number of Pulses:" + " " + body.pulse_info.count],
+                summary: ["Number of Pulses: " + body.pulse_info.count],
                 // Data that you want to pass back to the notification window details block
-                details: {
-                    bodyObjects: body
-
-                }
+                details: body
             }
         });
     });
@@ -206,11 +189,6 @@ function _lookupEntityDomain(entityObj, options, cb) {
         }
         Logger.debug({body: body}, "Printing out the results of Body ");
 
-
-        if (body.length < 2) {
-            return;
-        }
-
         if (options.pulses != true && body.pulse_info.count === 0) {
             cb(null, {
                 entity: entityObj,
@@ -219,36 +197,22 @@ function _lookupEntityDomain(entityObj, options, cb) {
             return;
         }
 
-        if (body.pulse_info.count === 0) {
-            cb(null, {
-                entity: entityObj,
-                data: null // this entity will be cached as a miss
-            });
-            return;
-        }
-
-
         // The lookup results returned is an array of lookup objects with the following format
         cb(null, {
             // Required: This is the entity object passed into the integration doLookup method
             entity: entityObj,
             // Required: An object containing everything you want passed to the template
             data: {
-                // Required: this is the string value that is displayed in the template
-                entity_name: entityObj.value,
                 // Required: These are the tags that are displayed in your template
-                summary: ["Number of Pulses:" + " " + body.pulse_info.count],
+                summary: ["Number of Pulses: " + body.pulse_info.count],
                 // Data that you want to pass back to the notification window details block
-                details: {
-                    bodyObjects: body
-                }
+                details: body
             }
         });
     });
 }
 
 function _lookupEntityHash(entityObj, options, cb) {
-
 
     let requestOptions = {
         uri: BASE_URI + '/file/' + entityObj.value.toLowerCase() + '/general',
@@ -276,11 +240,6 @@ function _lookupEntityHash(entityObj, options, cb) {
         }
         Logger.debug({body: body}, "Printing out the results of Body ");
 
-
-        if (body.length < 2) {
-            return;
-        }
-
         if (options.pulses && body.pulse_info.count === 0) {
             cb(null, {
                 entity: entityObj,
@@ -289,22 +248,16 @@ function _lookupEntityHash(entityObj, options, cb) {
             return;
         }
 
-
         // The lookup results returned is an array of lookup objects with the following format
         cb(null, {
             // Required: This is the entity object passed into the integration doLookup method
             entity: entityObj,
             // Required: An object containing everything you want passed to the template
             data: {
-                // Required: this is the string value that is displayed in the template
-                entity_name: entityObj.value,
                 // Required: These are the tags that are displayed in your template
-                summary: ["Number of Pulses:" + " " + body.pulse_info.count],
+                summary: ["Number of Pulses: " + body.pulse_info.count],
                 // Data that you want to pass back to the notification window details block
-                details: {
-                    bodyObjects: body
-
-                }
+                details: body
             }
         });
     });
