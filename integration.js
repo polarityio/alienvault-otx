@@ -62,7 +62,7 @@ function doLookup(entities, options, cb) {
         _setupRegexBlacklists(options);
 
         if (_.includes(blacklist, entityObj.value)) {
-            rnext(null);
+            next(null);
         }
         else if (entityObj.isIPv4 && !entityObj.isPrivateIP) {
             if (ipBlacklistRegex !== null) {
