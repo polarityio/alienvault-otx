@@ -279,14 +279,19 @@ function _isApiError(err, response, body, entityValue) {
     }
 
     if (response.statusCode === 500) {
-        return _createJsonErrorPayload("Malformed Request", null, '500', '1', 'Malformed Request', {
-            err: err
+        return _createJsonErrorPayload("AlienVault OTX Server 500 error", null, '500', '1', 'AlienVault OTX Server 500 error', {
+            err: err,
+            entityValue: entityValue
         });
     }
 
     // Any code that is not 200 and not 404 (missed response) or 400, we treat as an error
     if (response.statusCode !== 200 && response.statusCode !== 404 && response.statusCode !== 400) {
-        return body;
+        return _createJsonErrorPayload("Unexpected HTTP Status Code", null, response.statusCode, '1', 'Unexpected HTTP Status Code', {
+            err: err,
+            body:body,
+            entityValue: entityValue
+        });
     }
 
     return null;
