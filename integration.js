@@ -17,25 +17,25 @@ const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
 
 function _setupRegexBlacklists(options) {
     if (options.domainBlacklistRegex !== previousDomainRegexAsString && options.domainBlacklistRegex.length === 0) {
-        log.debug("Removing Domain Blacklist Regex Filtering");
+        Logger.debug("Removing Domain Blacklist Regex Filtering");
         previousDomainRegexAsString = '';
         domainBlacklistRegex = null;
     } else {
         if (options.domainBlacklistRegex !== previousDomainRegexAsString) {
             previousDomainRegexAsString = options.domainBlacklistRegex;
-            log.debug({domainBlacklistRegex: previousDomainRegexAsString}, "Modifying Domain Blacklist Regex");
+            Logger.debug({domainBlacklistRegex: previousDomainRegexAsString}, "Modifying Domain Blacklist Regex");
             domainBlacklistRegex = new RegExp(options.domainBlacklistRegex, 'i');
         }
     }
 
     if (options.ipBlacklistRegex !== previousIpRegexAsString && options.ipBlacklistRegex.length === 0) {
-        log.debug("Removing IP Blacklist Regex Filtering");
+        Logger.debug("Removing IP Blacklist Regex Filtering");
         previousIpRegexAsString = '';
         ipBlacklistRegex = null;
     } else {
         if (options.ipBlacklistRegex !== previousIpRegexAsString) {
             previousIpRegexAsString = options.ipBlacklistRegex;
-            log.debug({ipBlacklistRegex: previousIpRegexAsString}, "Modifying IP Blacklist Regex");
+            Logger.debug({ipBlacklistRegex: previousIpRegexAsString}, "Modifying IP Blacklist Regex");
             ipBlacklistRegex = new RegExp(options.ipBlacklistRegex, 'i');
         }
     }
@@ -65,7 +65,7 @@ function doLookup(entities, options, cb) {
         else if (entityObj.isIPv4 && !entityObj.isPrivateIP) {
             if (ipBlacklistRegex !== null) {
                 if (ipBlacklistRegex.test(entityObj.value)) {
-                    log.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
+                    Logger.debug({ip: entityObj.value}, 'Blocked BlackListed IP Lookup');
                     return next(null);
                 }
             }
@@ -91,7 +91,7 @@ function doLookup(entities, options, cb) {
         } else if (entityObj.isDomain) {
             if (domainBlacklistRegex !== null) {
                 if (domainBlacklistRegex.test(entityObj.value)) {
-                    log.debug({domain: entityObj.value}, 'Blocked BlackListed Domain Lookup');
+                    Logger.debug({domain: entityObj.value}, 'Blocked BlackListed Domain Lookup');
                     return next(null);
                 }
             }
