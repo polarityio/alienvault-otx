@@ -2,8 +2,6 @@
 
 let request = require('request');
 let _ = require('lodash');
-let util = require('util');
-let net = require('net');
 let async = require('async');
 let config = require('./config/config');
 let fs = require('fs');
