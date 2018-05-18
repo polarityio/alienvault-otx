@@ -4,7 +4,8 @@ module.exports = {
     "description": "AlienVaultOTX api integration",
     "entityTypes": ['domain', 'IPv4', 'hash'],
     "styles":[
-        "./styles/otx.less"
+        "./styles/otx.less",
+        "./styles/exfoliate.less"
     ],
     "block": {
         "component": {

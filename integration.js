@@ -150,7 +150,7 @@ function _lookupEntity(entityObj, options, cb) {
             // Required: An object containing everything you want passed to the template
             data: {
                 // Required: These are the tags that are displayed in your template
-                summary: ["Number of Pulses: " + body.pulse_info.count],
+                summary: [body.pulse_info.count + " pulses"],
                 // Data that you want to pass back to the notification window details block
                 details: body
             }
@@ -205,7 +205,7 @@ function _lookupEntityDomain(entityObj, options, cb) {
             // Required: An object containing everything you want passed to the template
             data: {
                 // Required: These are the tags that are displayed in your template
-                summary: ["Number of Pulses: " + body.pulse_info.count],
+                summary: [body.pulse_info.count + " pulses"],
                 // Data that you want to pass back to the notification window details block
                 details: body
             }
@@ -256,7 +256,7 @@ function _lookupEntityHash(entityObj, options, cb) {
             // Required: An object containing everything you want passed to the template
             data: {
                 // Required: These are the tags that are displayed in your template
-                summary: ["Number of Pulses: " + body.pulse_info.count],
+                summary: [body.pulse_info.count + " pulses"],
                 // Data that you want to pass back to the notification window details block
                 details: body
             }

@@ -1,134 +1,161 @@
-{{#if block.data.details.country_name}}
-    <div class="country">
-        <span class="counts"> Country: </span>
-        <b>{{block.data.details.country_name}}</b>
-    </div>
-{{/if}}
+<div class="p-non-exfoliate-outer-padding">
+    {{#if details.whois}}
+        <div class="whois-container">
+            <a class="p-link" href="{{details.whois}}">View in DomainTools Whois <i
+                    class="fa fa-external-link"></i></a>
+        </div>
+    {{/if}}
 
-{{#if block.data.details.city}}
-    <div class="city">
-        <span class="counts"> City: </span>
-        <b>{{block.data.details.city}}</b>
-    </div>
-{{/if}}
+    {{#if details.country_name}}
+        <div>
+            <span class="p-key">Country: </span>
+            <span class="p-value">{{details.country_name}}</span>
+        </div>
+    {{/if}}
 
-{{#if block.data.details.asn}}
-    <div class="asn">
-        <span class="counts"> ASN: </span>
-        <b>{{block.data.details.asn}}</b>
-    </div>
-{{/if}}
+    {{#if details.city}}
+        <div>
+            <span class="p-key">City: </span>
+            <span class="p-value">{{details.city}}</span>
+        </div>
+    {{/if}}
 
-{{#if block.data.details.validation}}
-    <div class="validation ">
-        <span class="datas"> Validation: </span>
-        {{#each block.data.details.validation as |data|}}
-            <li>{{data.source}}</li>
-        {{/each}}
-    </div>
-{{/if}}
+    {{#if details.asn}}
+        <div>
+            <span class="p-key">ASN: </span>
+            <span class="p-value">{{details.asn}}</span>
+        </div>
+    {{/if}}
 
-{{#if block.data.details.whois}}
-    <div class="whois">
-        <a href="{{block.data.details.whois}}"> <b>(View in DomainTools Whois) </b> </a>
-    </div>
-{{/if}}
+    {{#if details.validation}}
+        <div>
+            <span class="p-key"> Validation: </span>
+            {{#each (limit details.validation maxValidation) as |data|}}
+                <span class="p-value comma-delimited-item">{{data.source}}</span>
+            {{/each}}
+            {{#if (gt details.validation.length maxValidation)}}
+                <span class="p-footnote">(Not all validations shown)</span>
+            {{/if}}
+        </div>
+    {{/if}}
 
-{{#if block.data.details.pulse_info.pulses}}
-    <div class="dnsdball">
-        {{#each block.data.details.pulse_info.pulses as |item|}}
+    {{#if details.pulse_info.pulses}}
+        <div class="pulses">
+            {{#each (limit details.pulse_info.pulses maxPulses) as |pulse|}}
+                <div class="pulse-container">
+                    <h1 class="p-title">
+                        <i class="fa fa-fw fa-info"></i> Pulse
+                        <div class="tlp-graphic">
+                            {{#if (eq pulse.TLP "red")}}
+                                <span class="circle p-bg-red"></span>
+                            {{else}}
+                                <span class="circle p-bg-white"></span>
+                            {{/if}}
+                            {{#if (eq pulse.TLP "amber")}}
+                                <span class="circle p-bg-orange"></span>
+                            {{else}}
+                                <span class="circle p-bg-white"></span>
+                            {{/if}}
+                            {{#if (eq pulse.TLP "green")}}
+                                <span class="circle p-bg-green"></span>
+                            {{else}}
+                                <span class="circle p-bg-white"></span>
+                            {{/if}}
+                        </div>
+                    </h1>
 
-            <div class="pulse">
-                <i class="fa fa-info #ADADAD"></i><span class="type"> <b>Pulse: </b> </span>
-            </div>
+                    {{#if pulse.TLP}}
+                        <div>
+                            <span class="p-key">TLP: </span>
+                            <span class="p-value">{{pulse.TLP}}</span>
+                        </div>
+                    {{/if}}
 
-            <div class="tlp">
-                {{#if item.TLP}}
-                    <span class="type"> TLP: </span>
-                    <b>{{item.TLP}}</b>
-                {{/if}}
-            </div>
+                    {{#if pulse.observation.modified}}
+                        <div>
+                            <span class="p-key">Last modified: </span>
+                            <span class="p-value">{{moment-time pulse.observation.modified}}</span>
+                        </div>
+                    {{/if}}
 
-            <div class="first">
-                {{#if item.observation.modified}}
-                    <span class="Ctimefirst"> Last modified: </span>
-                    <b>{{moment-time item.observation.modified}}</b>
-                {{/if}}
-            </div>
+                    {{#if pulse.name}}
+                        <div>
+                            <span class="p-key">Name: </span>
+                            <span class="p-value">{{pulse.name}}</span>
+                        </div>
+                    {{/if}}
 
-            <div class="rname">
-                {{#if item.name}}
-                    <span class="name"> Name: </span>
-                    <b>{{item.name}}</b>
-                {{/if}}
-            </div>
+                    {{#if pulse.adversary}}
+                        <div>
+                            <span class="p-key">Adversary: </span>
+                            <span class="p-value">{{pulse.adversary}}</span>
+                        </div>
+                    {{/if}}
 
-            <div class="rname">
-                {{#if item.adversary}}
-                    <span class="name"> Adversary: </span>
-                    <b>{{item.adversary}}</b>
-                {{/if}}
-            </div>
+                    {{#if pulse.groups}}
+                        <div>
+                            <span class="p-key">Group Names: </span>
+                            {{#each (limit pulse.groups maxGroups) as |data|}}
+                                <span class="p-value comma-delimited-item">{{data.name}}</span>
+                            {{/each}}
+                        </div>
+                    {{/if}}
 
-            <div class="rname">
-                {{#if item.description}}
-                    <span class="name"> Description: </span>
-                    <b>{{item.description}}</b>
-                {{/if}}
-            </div>
+                    {{#if pulse.targeted_countries}}
+                        <div>
+                            <span class="p-key">Targeted Countries: </span>
+                            {{#each (limit pulse.targeted_countries maxTargetedCountries) as |data|}}
+                                <span class="p-value comma-delimited-item">{{data}}</span>
+                            {{/each}}
+                            {{#if (gt pulse.targeted_countries.length maxTargetedCountries)}}
+                                <span class="p-footnote">(Not all countries shown)</span>
+                            {{/if}}
+                        </div>
+                    {{/if}}
 
-            <div class="tags">
-                {{#if item.tags}}
-                    <span class="datas"> Tags: </span>
-                {{/if}}
-                {{#if item.tags}}
-                    {{#each item.tags as |data|}}
-                        <li><b>{{data}}</b></li>
-                    {{/each}}
-                {{else}}
-                {{/if}}
-            </div>
+                    {{#if pulse.description}}
+                        <div>
+                            <span class="p-key">Description:</span>
+                            <span class="p-value">{{pulse.description}}</span>
+                        </div>
+                    {{/if}}
 
-            <div class="tags">
-                {{#if item.targeted_countries}}
-                    <span class="datas"> Targeted Countries: </span>
-                {{/if}}
-                {{#if item.targeted_countries}}
-                    {{#each item.targeted_countries as |data|}}
-                        <li><b>{{data}}</b></li>
-                    {{/each}}
-                {{else}}
-                {{/if}}
-            </div>
+                    {{#if pulse.tags}}
+                        <div class="tags">
+                            {{#each (limit pulse.tags maxPulseTags) as |tag|}}
+                                <span class="pulse-tag">{{tag}}</span>
+                            {{/each}}
+                            {{#if (gt pulse.tags.length maxPulseTags)}}
+                                <span class="p-footnote">(Not all tags shown)</span>
+                            {{/if}}
+                        </div>
+                    {{/if}}
 
-            <div class="groups">
-                {{#if item.groups}}
-                    <span class="datas"> Group Names: </span>
-                {{/if}}
-                {{#if item.groups}}
-                    {{#each item.groups as |data|}}
-                        <li><b>{{data.name}}</b></li>
-                    {{/each}}
-                {{else}}
-                {{/if}}
-            </div>
-
-            <div class="references">
-                {{#if item.references}}
-                    <span class="datas"> References: </span>
-                {{/if}}
-                {{#if item.references}}
-                    {{#each item.references as |data|}}
-                        <li><b>{{data}}</b></li>
-                    {{/each}}
-                {{else}}
-                {{/if}}
-            </div>
-        {{/each}}
-
-    </div>
-{{else}}
-    <div class="rtype">
-        <i class="fa fa-exclamation-circle #ADADAD"></i><span class="type"> <b>No Pulse Information Found</b> </span>
-    </div>
-{{/if}}
+                    {{#if pulse.references}}
+                        <div>
+                            <span class="p-key">References: </span>
+                            {{#each (limit pulse.references maxReferences) as |data|}}
+                                <div>
+                                    <i class="fa fa-external-link-square fa-fw p-grey"></i>
+                                    <a class="p-link reference" href="{{data}}">{{data}}</a>
+                                </div>
+                            {{/each}}
+                            {{#if (gt pulse.references.length maxReferences)}}
+                                <span class="p-footnote">(Not all references shown)</span>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                </div>
+            {{/each}}
+        </div>
+        {{#unless allPulsesShowing}}
+            <span {{action "showMorePulses"}} class="p-action">Show {{pulsesPerPage}} more pulses</span>
+        {{else}}
+            <span class="p-footnote">(All Pulses Showing)</span>
+        {{/unless}}
+    {{else}}
+        <div>
+            <i class="fa fa-exclamation-circle p-yellow"></i><span> No Pulse Details Available</span>
+        </div>
+    {{/if}}
+</div>

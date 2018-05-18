@@ -1,122 +1,65 @@
-/*
- All integrations are namespaced with the class `<integration_id>-integration`.  When creating custom
- CSS to style your integration you should ensure that all your classes are appropriately namespaced to prevent
- your css from affecting other integrations.  Note that the integration id is based off the name of the integration
- directory.
-*/
-.otx-integration {
+.tlp-graphic {
+  background-color: #9a9a9a;
+  margin-left: 5px;
+  padding: 2px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 4px;
+
+  .circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 2px;
+  }
+
+  .circle:first-child {
+    margin-left: 0;
+  }
 }
 
-  div.country {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
-
-  div.city {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
-
-  div.asn {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
-
-div.whois {
-  text-align: left;
-  font-size: 12px;
-  font-weight: 300;
-  padding-left: 5px;
+.pulse-container{
+  border-bottom: 1px solid #e5e7e9;
+  padding-bottom: 15px;
+  padding-top: 5px;
 }
 
-  div.first {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
+.pulse-container:last-child{
+  border: none;
+}
 
-  div.last {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
+.whois-container{
+  margin-bottom: 5px;
+}
 
-  div.pulse {
-      text-align: left;
-      font-size: 12px;
-      padding-left: 5px;
-      font-weight: 600;
-      color: #ADADAD ;
-      padding-bottom: 3px;
-      padding-top: 3px;
-  }
+.comma-delimited-item:after {
+  content: ", ";
+}
 
-  div.rname {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
-  div.tlp {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-  }
+.comma-delimited-item:last-child:after{
+  content: "";
+}
 
-  div.validation {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-    li{
-      margin-left: 15px;
-      font-size: 12px;
-      font-weight: 300;
+.pulses {
+  .tags {
+    margin-top: 5px;
+
+    .pulse-tag {
+      background-color: #aaa;
+      border-radius: 4px;
+      margin-bottom: 2px;
+      padding: 3px;
+      display: inline-block;
     }
   }
 
-  div.tags {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-    li{
-      margin-left: 15px;
-      font-size: 12px;
-      font-weight: 300;
-    }
+  .reference {
+    word-break: break-all;
   }
+}
 
-  div.references {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-    li{
-      margin-left: 15px;
-      font-size: 12px;
-      font-weight: 300;
-    }
-    padding-bottom: 5px;
-  }
-
-  div.groups {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 300;
-    padding-left: 5px;
-    li{
-      margin-left: 15px;
-      font-size: 12px;
-      font-weight: 300;
-    }
-  }
+.fa-external-link-square{
+  font-size: 10px;
+}
