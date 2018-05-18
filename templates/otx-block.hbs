@@ -1,44 +1,38 @@
-<div class="country">
-    {{#if block.data.details.country_name}}
+{{#if block.data.details.country_name}}
+    <div class="country">
         <span class="counts"> Country: </span>
         <b>{{block.data.details.country_name}}</b>
-    {{/if}}
-</div>
+    </div>
+{{/if}}
 
-<div class="city">
-    {{#if block.data.details.city}}
+{{#if block.data.details.city}}
+    <div class="city">
         <span class="counts"> City: </span>
         <b>{{block.data.details.city}}</b>
-    {{/if}}
-</div>
+    </div>
+{{/if}}
 
-<div class="asn">
-    {{#if block.data.details.asn}}
+{{#if block.data.details.asn}}
+    <div class="asn">
         <span class="counts"> ASN: </span>
         <b>{{block.data.details.asn}}</b>
-    {{/if}}
-</div>
+    </div>
+{{/if}}
 
-<div class="validation ">
-    {{#if block.data.details.validation}}
+{{#if block.data.details.validation}}
+    <div class="validation ">
         <span class="datas"> Validation: </span>
-    {{/if}}
-    {{#if block.data.details.validation}}
         {{#each block.data.details.validation as |data|}}
             <li>{{data.source}}</li>
         {{/each}}
-    {{else}}
-    {{/if}}
-</div>
+    </div>
+{{/if}}
 
-
-<div class="whois">
-    {{#if block.data.details.whois}}
-        <span class="balis"> WhoIs: </span>
-        <a href="{{block.data.details.whois}}"> <b>(View in DomainTools WhoIs) </b> </a>
-    {{/if}}
-</div>
-
+{{#if block.data.details.whois}}
+    <div class="whois">
+        <a href="{{block.data.details.whois}}"> <b>(View in DomainTools Whois) </b> </a>
+    </div>
+{{/if}}
 
 {{#if block.data.details.pulse_info.pulses}}
     <div class="dnsdball">
