@@ -15,7 +15,6 @@ let ipBlacklistRegex = null;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
 
-
 function _setupRegexBlacklists(options) {
     if (options.domainBlacklistRegex !== previousDomainRegexAsString && options.domainBlacklistRegex.length === 0) {
         Logger.debug("Removing Domain Blacklist Regex Filtering");
@@ -41,7 +40,6 @@ function _setupRegexBlacklists(options) {
         }
     }
 }
-
 
 function doLookup(entities, options, cb) {
 
@@ -137,7 +135,7 @@ function _lookupEntity(entityObj, options, cb) {
         }
         Logger.debug({body: body}, "Printing out the results of Body ");
 
-        if (options.pulses && body.pulse_info.count === 0) {
+        if (options.pulses === true && body.pulse_info.count === 0) {
             cb(null, {
                 entity: entityObj,
                 data: null // this entity will be cached as a miss
@@ -161,7 +159,6 @@ function _lookupEntity(entityObj, options, cb) {
 }
 
 function _lookupEntityDomain(entityObj, options, cb) {
-
 
     let requestOptions = {
         uri: BASE_URI + '/domain/' + entityObj.value.toLowerCase() + '/general',
@@ -187,9 +184,13 @@ function _lookupEntityDomain(entityObj, options, cb) {
             });
             return;
         }
-        Logger.debug({body: body}, "Printing out the results of Body ");
+        Logger.debug({
+            "options.pulses": options.pulses,
+            pulseCount: body.pulse_info.count,
+            body: body
+        }, "Printing out the results of Body ");
 
-        if (options.pulses != true && body.pulse_info.count === 0) {
+        if (options.pulses === true && body.pulse_info.count === 0) {
             cb(null, {
                 entity: entityObj,
                 data: null // this entity will be cached as a miss
@@ -240,7 +241,7 @@ function _lookupEntityHash(entityObj, options, cb) {
         }
         Logger.debug({body: body}, "Printing out the results of Body ");
 
-        if (options.pulses && body.pulse_info.count === 0) {
+        if (options.pulses === true && body.pulse_info.count === 0) {
             cb(null, {
                 entity: entityObj,
                 data: null // this entity will be cached as a miss
