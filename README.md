@@ -1,6 +1,8 @@
 # Polarity AlienVaultOTX Integration
 
-The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX's open source API to return pulse information on Hashes, IPs and Domains.  For more information on AlienVault OTX please see https://otx.alienvault.com
+The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX's open source API to return pulse information on Hashes, IPs and Domains.
+
+> For more information on AlienVault OTX please see https://otx.alienvault.com
 
 ![image](https://user-images.githubusercontent.com/306319/40240545-c0b34080-5a86-11e8-9708-4d14f8eb0fb1.png)
 
