@@ -1,4 +1,4 @@
-# Polarity AlienVaultOTX Integration
+# Polarity AlienVault OTX Integration
 
 The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX's open source API to return pulse information on Hashes, IPs and Domains.
 
@@ -7,18 +7,18 @@ The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX
 ![image](https://user-images.githubusercontent.com/306319/40240545-c0b34080-5a86-11e8-9708-4d14f8eb0fb1.png)
 
 
-## AlienVaultOTX Integration Options
+## AlienVault OTX Integration Options
 
 
 ### API Key
 
-In order to use the AlienVaultOTX API, you must have a valid API key. To obtain a valid API key, just sign up on AlienVaultOTX's website. In your account settings you will be able to get
+In order to use the AlienVault OTX API, you must have a valid API key. To obtain a valid API key, just sign up on AlienVault OTX's website. In your account settings you will be able to get
 
 https://otx.alienvault.com
 
 ### Domain Blacklist
 
-This is an alternate option that can be used to specify domains or IPs that you do not want sent to AlienVaultOTX.  The data must specify the entire IP or domain to be blocked (e.g., www.google.com is treated differently than google.com).
+This is an alternate option that can be used to specify domains or IPs that you do not want sent to AlienVault OTX.  The data must specify the entire IP or domain to be blocked (e.g., www.google.com is treated differently than google.com).
 
 ### Domain Blacklist Regex
 
