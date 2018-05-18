@@ -1,7 +1,7 @@
 'use strict';
 polarity.export = PolarityComponent.extend({
     details: Ember.computed.alias('block.data.details'),
-    pulsesPerPage: 2,
+    pulsesPerPage: 10,
     maxPulseTags: 20,
     maxTargetedCountries: 10,
     maxReferences: 10,
