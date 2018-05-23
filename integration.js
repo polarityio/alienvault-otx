@@ -42,16 +42,14 @@ function _setupRegexBlacklists(options) {
 }
 
 function doLookup(entities, options, cb) {
-
     let blacklist = options.blacklist;
     let lookupResults = [];
+
+    _setupRegexBlacklists(options);
 
     Logger.trace({blacklist: blacklist}, "checking to see what blacklist looks like");
 
     async.each(entities, function (entityObj, next) {
-
-        _setupRegexBlacklists(options);
-
         if (_.includes(blacklist, entityObj.value)) {
             next(null);
         } else if (entityObj.isIPv4 && !entityObj.isPrivateIP) {
