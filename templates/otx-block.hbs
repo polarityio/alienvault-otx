@@ -1,8 +1,7 @@
 <div class="p-non-exfoliate-outer-padding">
     {{#if details.whois}}
         <div class="whois-container">
-            <a class="p-link" href="{{details.whois}}">View in DomainTools Whois <i
-                    class="fa fa-external-link"></i></a>
+            <a class="p-link" href="{{details.whois}}">View in DomainTools Whois {{fa-icon "external-link" class="icon"}}</a>
         </div>
     {{/if}}
 
@@ -43,28 +42,27 @@
         <div class="pulses">
             {{#each (limit details.pulse_info.pulses maxPulses) as |pulse|}}
                 <div class="pulse-container">
-                    <h1 class="p-title">
-                        <i class="fa fa-fw fa-info"></i> Pulse
-                        <div class="tlp-graphic">
-                            {{#if (eq pulse.TLP "red")}}
-                                <span class="circle p-bg-red"></span>
-                            {{else}}
-                                <span class="circle p-bg-white"></span>
-                            {{/if}}
-                            {{#if (eq pulse.TLP "amber")}}
-                                <span class="circle p-bg-orange"></span>
-                            {{else}}
-                                <span class="circle p-bg-white"></span>
-                            {{/if}}
-                            {{#if (eq pulse.TLP "green")}}
-                                <span class="circle p-bg-green"></span>
-                            {{else}}
-                                <span class="circle p-bg-white"></span>
-                            {{/if}}
-                        </div>
-                    </h1>
-
                     {{#if pulse.TLP}}
+                        <h1 class="p-title">
+                            {{fa-icon "info"}} Pulse
+                            <div class="tlp-graphic">
+                                {{#if (eq pulse.TLP "red")}}
+                                    <span class="circle p-bg-red"></span>
+                                {{else}}
+                                    <span class="circle p-bg-white"></span>
+                                {{/if}}
+                                {{#if (eq pulse.TLP "amber")}}
+                                    <span class="circle p-bg-orange"></span>
+                                {{else}}
+                                    <span class="circle p-bg-white"></span>
+                                {{/if}}
+                                {{#if (eq pulse.TLP "green")}}
+                                    <span class="circle p-bg-green"></span>
+                                {{else}}
+                                    <span class="circle p-bg-white"></span>
+                                {{/if}}
+                            </div>
+                        </h1>
                         <div>
                             <span class="p-key">TLP: </span>
                             <span class="p-value">{{pulse.TLP}}</span>
@@ -137,10 +135,7 @@
                             {{#each (limit pulse.references maxReferences) as |reference|}}
                                 {{!-- There seem to be a large number of empty string references so skipping those --}}
                                 {{#if (gt reference.length 0)}}
-                                    <div>
-                                        <i class="fa fa-external-link-square fa-fw p-grey"></i>
-                                        <a class="p-link reference" href="{{reference}}">{{reference}}</a>
-                                    </div>
+                                    <pre class="reference">{{reference}}</pre>
                                 {{/if}}
                             {{/each}}
                             {{#if (gt pulse.references.length maxReferences)}}
@@ -158,7 +153,7 @@
         {{/unless}}
     {{else}}
         <div>
-            <i class="fa fa-exclamation-circle p-yellow"></i><span> No Pulse Details Available</span>
+            {{fa-icon "exclamation-circle" class="p-yellow icon"}}<span> No Pulse Details Available</span>
         </div>
     {{/if}}
 </div>
