@@ -4,7 +4,7 @@ The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX
 
 > For more information on AlienVault OTX please see https://otx.alienvault.com
 
-![image](https://user-images.githubusercontent.com/306319/40240545-c0b34080-5a86-11e8-9708-4d14f8eb0fb1.png)
+![image](https://user-images.githubusercontent.com/306319/47399385-3132f980-d706-11e8-876b-7794ab671468.png)
 
 
 ## AlienVault OTX Integration Options
