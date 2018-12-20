@@ -51,12 +51,9 @@ function _setupRegexBlacklists(options) {
 }
 
 function doLookup(entities, options, cb) {
-  let blacklist = options.blacklist;
   let lookupResults = [];
 
   _setupRegexBlacklists(options);
-
-  Logger.trace({ blacklist: blacklist }, 'checking to see what blacklist looks like');
 
   async.each(
     entities,
@@ -89,7 +86,6 @@ function _isInvalidEntity(entityObj) {
 
 function _isEntityBlacklisted(entityObj, options) {
   const blacklist = options.blacklist;
-  _setupRegexBlacklists(options);
 
   Logger.trace({ blacklist: blacklist }, 'checking to see what blacklist looks like');
 
