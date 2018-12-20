@@ -93,7 +93,7 @@ function _isEntityBlacklisted(entityObj, options) {
 
   Logger.trace({ blacklist: blacklist }, 'checking to see what blacklist looks like');
 
-  if (_.includes(blacklist, entityObj.value)) {
+  if (_.includes(blacklist, entityObj.value.toLowerCase())) {
     return true;
   }
 
