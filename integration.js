@@ -14,6 +14,8 @@ let domainBlacklistRegex = null;
 let ipBlacklistRegex = null;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
+const MAX_DOMAIN_LABEL_LENGTH = 63;
+const MAX_ENTITY_LENGTH = 100;
 
 function _setupRegexBlacklists(options) {
   if (
@@ -82,6 +84,19 @@ function _isInvalidEntity(entityObj) {
   if (entityObj.value.length > 100) {
     return true;
   }
+
+  // Domain labels (the parts in between the periods, must be 63 characters or less
+  if (entityObj.isDomain) {
+    const invalidLabel = entityObj.value.split('.').find((label) => {
+      return label.length > 63;
+    });
+
+    if(typeof invalidLabel !== 'undefined'){
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function _isEntityBlacklisted(entityObj, options) {
