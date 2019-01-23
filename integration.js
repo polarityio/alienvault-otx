@@ -16,6 +16,7 @@ let ipBlacklistRegex = null;
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
 const MAX_DOMAIN_LABEL_LENGTH = 63;
 const MAX_ENTITY_LENGTH = 100;
+const MAX_TAGS_IN_SUMMARY = 5;
 
 function _setupRegexBlacklists(options) {
   if (
@@ -81,17 +82,17 @@ function doLookup(entities, options, cb) {
 }
 function _isInvalidEntity(entityObj) {
   // AlienvaultOTX API does not accept entities over 100 characters long so if we get any of those we don't look them up
-  if (entityObj.value.length > 100) {
+  if (entityObj.value.length > MAX_ENTITY_LENGTH) {
     return true;
   }
 
   // Domain labels (the parts in between the periods, must be 63 characters or less
   if (entityObj.isDomain) {
     const invalidLabel = entityObj.value.split('.').find((label) => {
-      return label.length > 63;
+      return label.length > MAX_DOMAIN_LABEL_LENGTH;
     });
 
-    if(typeof invalidLabel !== 'undefined'){
+    if (typeof invalidLabel !== 'undefined') {
       return true;
     }
   }
@@ -137,7 +138,7 @@ function _getUrl(entityObj) {
       otxEntityType = 'domain';
       break;
     case 'hash':
-      otxEntityType = 'hash';
+      otxEntityType = 'file';
       break;
     case 'IPv4':
       otxEntityType = 'IPv4';
@@ -180,14 +181,21 @@ function _lookupEntity(entityObj, options, cb) {
 
     if (typeof body.pulse_info === 'undefined') {
       Logger.error({ entity: entityObj.value }, 'Undefined pulse_info on body');
+      return cb('Undefined pulse_info on body');
     }
 
     if (options.pulses === true && body.pulse_info.count === 0) {
-      cb(null, {
+      return cb(null, {
         entity: entityObj,
         data: null // this entity will be cached as a miss
       });
-      return;
+    }
+
+    const allTags = _getPulseDiveTags(body);
+    const tags = allTags.slice(0, MAX_TAGS_IN_SUMMARY);
+    tags.unshift(body.pulse_info.count + (body.pulse_info.count === 1 ? ' pulse' : ' pulses'));
+    if(allTags.length > MAX_TAGS_IN_SUMMARY){
+      tags.push(`+${allTags.length - MAX_TAGS_IN_SUMMARY} tags`);
     }
 
     // The lookup results returned is an array of lookup objects with the following format
@@ -197,12 +205,26 @@ function _lookupEntity(entityObj, options, cb) {
       // Required: An object containing everything you want passed to the template
       data: {
         // Required: These are the tags that are displayed in your template
-        summary: [body.pulse_info.count + (body.pulse_info.count === 1 ? ' pulse' : ' pulses')],
+        summary: tags,
         // Data that you want to pass back to the notification window details block
         details: body
       }
     });
   });
+}
+
+function _getPulseDiveTags(body) {
+  const tags = new Set();
+  if (Array.isArray(body.pulse_info.pulses)) {
+    for (let pulse of body.pulse_info.pulses) {
+      if (Array.isArray(pulse.tags)) {
+        for (let tag of pulse.tags) {
+          tags.add(tag);
+        }
+      }
+    }
+  }
+  return [...tags];
 }
 
 function _isLookupMiss(response, body) {

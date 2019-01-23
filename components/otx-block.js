@@ -10,6 +10,14 @@ polarity.export = PolarityComponent.extend({
   allPulsesShowing: Ember.computed('details.pulse_info.pulses.length', 'maxPulses', function() {
     return this.get('maxPulses') >= this.get('details.pulse_info.pulses.length');
   }),
+  alientvaultUrl: Ember.computed('block.entity.type', 'block.entity.values', function() {
+    let type = this.get('block.entity.type');
+    if(type === 'hash'){
+      type = 'file';
+    }
+    const value = this.get('block.entity.value');
+    return `https://otx.alienvault.com/indicator/${type}/${value}`;
+  }),
   // Gets set on init
   maxPulses: null,
   init() {
