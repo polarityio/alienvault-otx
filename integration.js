@@ -137,7 +137,7 @@ function _getUrl(entityObj) {
       otxEntityType = 'domain';
       break;
     case 'hash':
-      otxEntityType = 'hash';
+      otxEntityType = 'file';
       break;
     case 'IPv4':
       otxEntityType = 'IPv4';
