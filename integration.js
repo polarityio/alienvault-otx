@@ -374,6 +374,10 @@ function startup(logger) {
     defaults.proxy = config.request.proxy;
   }
 
+  if (typeof config.request.rejectUnauthorized === 'boolean') {
+    defaults.rejectUnauthorized = config.request.rejectUnauthorized;
+  }
+
   requestWithDefaults = request.defaults(defaults);
 }
 
