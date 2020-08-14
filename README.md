@@ -16,17 +16,17 @@ In order to use the AlienVault OTX API, you must have a valid API key. To obtain
 
 https://otx.alienvault.com
 
-### Domain Blacklist
+### Ingore Domain List
 
-This is an alternate option that can be used to specify domains or IPs that you do not want sent to AlienVault OTX.  The data must specify the entire IP or domain to be blocked (e.g., www.google.com is treated differently than google.com).
+This is an alternate option that can be used to specify domains that you do not want sent to AlienVault OTX. The data must specify the entire domain to be blocked (e.g., www.google.com is treated differently than google.com).
 
-### Domain Blacklist Regex
+### Ignore Domain Regex
 
-This option allows you to specify a regex to blacklist domains.  Any domain matching the regex will not be looked up.  If the regex is left blank then no domains will be blacklisted.
+Ingore regex used to not lookup any domains matching the regex. 
 
-### IP Blacklist Regex
+### Ignore IP Regex
 
-This option allows you to specify a regex to blacklist IPv4 Addresses.  Any IPv4 matching the regex will not be looked up.  If the regex is left blank then no IPv4s will be blacklisted.
+Ingore regex used to not lookup any ips matching the regex. 
 
 ### Hide Results without Pulses
 If checked, the integration will not display a result if there are no related Pulses
