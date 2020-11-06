@@ -40,7 +40,7 @@ module.exports = {
       name: 'API Key',
       description: 'AlienVaultOTX API key',
       default: '',
-      type: 'text',
+      type: 'password',
       userCanEdit: true,
       adminOnly: false
     },
