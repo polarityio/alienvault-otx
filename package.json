@@ -2,11 +2,11 @@
   "main": "./integration.js",
   "name": "AlienVaultOTX",
   "description": "AlienVault OTX integration",
-  "version": "3.1.4-beta",
+  "version": "3.2.0",
   "private": true,
   "dependencies": {
     "request": "^2.88.2",
-    "lodash": "^4.17.19",
-    "async": "^3.2"
+    "lodash": "^4.17.21",
+    "bottleneck":  "^2.19.5"
   }
 }

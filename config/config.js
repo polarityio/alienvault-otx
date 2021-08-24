@@ -1,15 +1,23 @@
 module.exports = {
   name: 'AlienVaultOTX',
   acronym: 'AVOTX',
-  description: 'AlienVaultOTX api integration',
+  description: 'Return Pulse and passive DNS information from AlienVault OTX',
   entityTypes: ['domain', 'IPv4', 'hash'],
   styles: ['./styles/otx.less'],
   block: {
     component: {
-      file: './components/otx-block.js'
+      file: './components/block.js'
     },
     template: {
-      file: './templates/otx-block.hbs'
+      file: './templates/block.hbs'
+    }
+  },
+  summary: {
+    component: {
+      file: './components/summary.js'
+    },
+    template: {
+      file: './templates/summary.hbs'
     }
   },
   request: {
@@ -33,7 +41,7 @@ module.exports = {
     // to false in a production environment.
     rejectUnauthorized: true
   },
-  logging: { level: 'info' },
+  logging: { level: 'trace' },
   options: [
     {
       key: 'apiKey',
@@ -47,7 +55,7 @@ module.exports = {
     {
       key: 'blocklist',
       name: 'Ignored Domain List',
-      description: 'List of domains that you never want to send to AlienVaultOTX',
+      description: 'Comma delimited list of domains you do not wish to search (exact matches required).',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -57,7 +65,7 @@ module.exports = {
       key: 'domainBlocklistRegex',
       name: 'Ignored Domain Regex',
       description:
-        'Domains that match the given regex will not be looked up.',
+        'Domains that match the given regex will not be searched.',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -67,7 +75,7 @@ module.exports = {
       key: 'ipBlocklistRegex',
       name: 'Ignored IP Regex',
       description:
-        'IPs that match the given regex will not be looked up.',
+        'IP Addresses that match the given regex will not be searched.',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -82,6 +90,26 @@ module.exports = {
       type: 'boolean',
       userCanEdit: true,
       adminOnly: false
+    },
+    {
+      key: 'maxConcurrent',
+      name: 'Max Concurrent Search Requests',
+      description:
+          'Maximum number of concurrent search requests (defaults to 10).  Integration must be restarted after changing this option.',
+      default: 10,
+      type: 'number',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'minTime',
+      name: 'Minimum Time Between Searches',
+      description:
+          'Minimum amount of time in milliseconds between each entity search (defaults to 25).  Integration must be restarted after changing this option.',
+      default: 25,
+      type: 'number',
+      userCanEdit: false,
+      adminOnly: true
     }
   ]
 };

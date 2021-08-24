@@ -1,11 +1,12 @@
 # Polarity AlienVault OTX Integration
 
-The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX's open source API to return pulse information on Hashes, IPs and Domains.
+The Polarity AlienVault OTX integration allows Polarity to search AlienVault OTX's open source API to return pulse and passive DNS information on Hashes, IPs and Domains.
 
 > For more information on AlienVault OTX please see https://otx.alienvault.com
 
-![image](https://user-images.githubusercontent.com/306319/47399385-3132f980-d706-11e8-876b-7794ab671468.png)
-
+| ![pulse](assets/pulse.png) | ![passive dns](assets/dns.png) |
+|---|--|
+|*Pulse Information* | *Passive DNS Information* |
 
 ## AlienVault OTX Integration Options
 
@@ -16,20 +17,28 @@ In order to use the AlienVault OTX API, you must have a valid API key. To obtain
 
 https://otx.alienvault.com
 
-### Ingore Domain List
+### Ignore Domain List
 
-This is an alternate option that can be used to specify domains that you do not want sent to AlienVault OTX. The data must specify the entire domain to be blocked (e.g., www.google.com is treated differently than google.com).
+This is an alternate option that can be used to specify domains that you do not want sent to AlienVault OTX. The data must specify the entire domain to be blocked (e.g., www.google.com is treated differently than google.com). A comma delimited list can be provided.
 
 ### Ignore Domain Regex
 
-Ingore regex used to not lookup any domains matching the regex. 
+Domains that match the given regex will not be searched 
 
 ### Ignore IP Regex
 
-Ingore regex used to not lookup any ips matching the regex. 
+IP addresses matching the provided regex will not be searched
 
 ### Hide Results without Pulses
 If checked, the integration will not display a result if there are no related Pulses
+
+### Max Concurrent Search Requests
+
+Maximum number of concurrent search requests (defaults to 10). Integration must be restarted after changing this option.
+
+### Minimum Time Between Searches
+
+Minimum amount of time in milliseconds between each entity search (defaults to 25). Integration must be restarted after changing this option.
 
 ## Installation Instructions
 

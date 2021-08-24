@@ -1,0 +1,283 @@
+{{#if details}}
+    <ul class="nav nav-tabs mt-2">
+        <li class="nav-item">
+            <a {{action "changeTab" "pulses"}}
+                    class="nav-link  {{if (or (eq activeTab "pulses")(not activeTab)) "active"}}"
+                    href="#">{{fa-icon icon="heart-rate" fixedWidth=true}} Pulses</a>
+        </li>
+        {{#if supportsDns}}
+            <li class="nav-item">
+                <a {{action "changeTab" "dns"}}
+                        class="nav-link {{if (eq activeTab "dns") "active"}}" href="#">
+                    {{fa-icon icon="globe" fixedWidth=true}} Passive DNS</a>
+            </li>
+        {{/if}}
+    </ul>
+{{else}}
+    {{!-- this no results occurs if there is an error on lookup and the user retries but there is no result --}}
+    <div>
+        <span>No Results</span>
+    </div>
+{{/if}}
+
+{{#if (eq activeTab "pulses")}}
+    {{#if errorMessage}}
+        <div class="alert alert-danger mt-2">
+            <pre>{{errorMessage}}</pre>
+        </div>
+    {{/if}}
+    {{#if (or general.isConnectionReset general.maxRequestQueueLimitHit general.isGatewayTimeout)}}
+        <button type="button" class="btn btn-polarity btn-sm retry-btn mt-2"{{action "retryLookup"}}>
+            {{#if running}}
+                {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
+            {{else}}
+                Retry Search
+            {{/if}}
+        </button>
+        <div class="mt-1">
+            <span class="p-footnote">The AlienVault API search limit was reached.  You can retry your search by pressing the "Retry Search" button.</span>
+        </div>
+    {{else if details}}
+        <div class="otx-link-container mt-1">
+            <a class="p-link" href="{{alientvaultUrl}}">View in AlienVault OTX {{fa-icon "external-link"
+                                                                                         class="external-icon"}}</a>
+        </div>
+        {{#if general.whois}}
+            <div class="whois-container">
+                <a class="p-link" href="{{details.general.whois}}">View in DomainTools Whois {{fa-icon "external-link"
+                                                                                                       class="external-icon"}}</a>
+            </div>
+        {{/if}}
+
+        {{#if general.country_name}}
+            <div>
+                <span class="p-key">Country: </span>
+                <span class="p-value">{{general.country_name}}</span>
+            </div>
+        {{/if}}
+
+        {{#if general.city}}
+            <div>
+                <span class="p-key">City: </span>
+                <span class="p-value">{{general.city}}</span>
+            </div>
+        {{/if}}
+
+        {{#if general.asn}}
+            <div>
+                <span class="p-key">ASN: </span>
+                <span class="p-value">{{general.asn}}</span>
+            </div>
+        {{/if}}
+
+        {{#if general.validation}}
+            <div>
+                <span class="p-key"> Validation: </span>
+                {{#each (limit general.validation maxValidation) as |data|}}
+                    <span class="p-value comma-delimited-item">{{data.source}}</span>
+                {{/each}}
+                {{#if (gt general.validation.length maxValidation)}}
+                    <span class="p-footnote">(Not all validations shown)</span>
+                {{/if}}
+            </div>
+        {{/if}}
+
+        {{#if general.pulse_info.pulses}}
+            <div class="pulses">
+                {{#each (limit general.pulse_info.pulses maxPulses) as |pulse|}}
+                    <div class="pulse-container">
+                        {{#if pulse.TLP}}
+                            <h1 class="p-title">
+                                {{fa-icon "info"}} Pulse
+                                <div class="tlp-graphic">
+                                    {{#if (eq pulse.TLP "red")}}
+                                        <span class="circle p-bg-red"></span>
+                                    {{else}}
+                                        <span class="circle p-bg-white"></span>
+                                    {{/if}}
+                                    {{#if (eq pulse.TLP "amber")}}
+                                        <span class="circle p-bg-orange"></span>
+                                    {{else}}
+                                        <span class="circle p-bg-white"></span>
+                                    {{/if}}
+                                    {{#if (eq pulse.TLP "green")}}
+                                        <span class="circle p-bg-green"></span>
+                                    {{else}}
+                                        <span class="circle p-bg-white"></span>
+                                    {{/if}}
+                                </div>
+                            </h1>
+                            <div>
+                                <span class="p-key">TLP: </span>
+                                <span class="p-value">{{pulse.TLP}}</span>
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.observation.modified}}
+                            <div>
+                                <span class="p-key">Last modified: </span>
+                                <span class="p-value">{{moment-time pulse.observation.modified}}</span>
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.name}}
+                            <div>
+                                <span class="p-key">Name: </span>
+                                <span class="p-value">{{pulse.name}}</span>
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.adversary}}
+                            <div>
+                                <span class="p-key">Adversary: </span>
+                                <span class="p-value">{{pulse.adversary}}</span>
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.groups}}
+                            <div>
+                                <span class="p-key">Group Names: </span>
+                                {{#each (limit pulse.groups maxGroups) as |data|}}
+                                    <span class="p-value comma-delimited-item">{{data.name}}</span>
+                                {{/each}}
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.targeted_countries}}
+                            <div>
+                                <span class="p-key">Targeted Countries: </span>
+                                {{#each (limit pulse.targeted_countries maxTargetedCountries) as |data|}}
+                                    <span class="p-value comma-delimited-item">{{data}}</span>
+                                {{/each}}
+                                {{#if (gt pulse.targeted_countries.length maxTargetedCountries)}}
+                                    <span class="p-footnote">(Not all countries shown)</span>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.description}}
+                            <div class="description-container">
+                                <span class="p-key">Description - </span>
+                                <span class="">{{pulse.description}}</span>
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.tags}}
+                            <div class="tags">
+                                {{#each (limit pulse.tags maxPulseTags) as |tag|}}
+                                    <span class="pulse-tag">{{tag}}</span>
+                                {{/each}}
+                                {{#if (gt pulse.tags.length maxPulseTags)}}
+                                    <span class="p-footnote">(Not all tags shown)</span>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+
+                        {{#if pulse.references}}
+                            <div class="references-container">
+                                <span class="p-key">References: </span>
+                                {{#each (limit pulse.references maxReferences) as |reference|}}
+                                {{!-- There seem to be a large number of empty string references so skipping those --}}
+                                    {{#if (gt reference.length 0)}}
+                                        <pre class="reference">{{reference}}</pre>
+                                    {{/if}}
+                                {{/each}}
+                                {{#if (gt pulse.references.length maxReferences)}}
+                                    <span class="p-footnote">(Not all references shown)</span>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+                    </div>
+                {{/each}}
+            </div>
+            {{#unless allPulsesShowing}}
+                <span {{action "showMorePulses"}} class="p-action">Show {{pulsesPerPage}} more pulses</span>
+            {{else}}
+                <span class="p-footnote">(All Pulses Showing)</span>
+            {{/unless}}
+        {{else}}
+            <div>
+                {{fa-icon "exclamation-circle" class="p-yellow icon"}}<span> No Pulse Details Available</span>
+            </div>
+        {{/if}}
+    {{/if}}
+{{/if}}
+{{!-- end of pulses tab --}}
+
+{{!-- start of dns tab --}}
+{{#if (eq activeTab "dns")}}
+    <div class="mt-2">
+        {{#if dnsErrorMessage}}
+            <div class="alert alert-danger">
+                <pre>{{dnsErrorMessage}}</pre>
+            </div>
+        {{/if}}
+        {{#if (or dns.isConnectionReset dns.maxRequestQueueLimitHit dns.isGatewayTimeout)}}
+            <button type="button" class="btn btn-polarity btn-sm retry-btn"{{action "refreshDns"}}>
+                {{#if running}}
+                    {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
+                {{else}}
+                    Retry DNS Search
+                {{/if}}
+            </button>
+            <div class="mt-1">
+                <span class="p-footnote">The AlienVault API search limit was reached.  You can retry your search by pressing the "Retry DNS Search" button.</span>
+            </div>
+        {{else}}
+            {{#if loadingDns}}
+                {{fa-icon icon="spinner-third" fixedWidth=true spin=true}} Loading DNS ...
+            {{/if}}
+            {{#if (gt dns.passive_dns.length 1)}}
+                <div class="mb-2">
+                    <span class="p-footnote">Displaying {{dns.passive_dns.length}} DNS results</span>
+                </div>
+            {{/if}}
+
+            <div class="dns-container">
+                {{#each dns.passive_dns as | entry index|}}
+                    {{#if (gt index 0)}}
+                        <hr>
+                    {{/if}}
+                    <div class="dns-entry">
+                        <div>
+                            <span class="p-key">Address: </span>
+                            <span class="p-value">{{entry.address}}</span>
+                        </div>
+                        <div>
+                            <span class="p-key">Hostname: </span>
+                            <span class="p-value">{{entry.hostname}}</span>
+                        </div>
+                        <div>
+                            <span class="p-key">ASN: </span>
+                            <span class="p-value">{{entry.asn}}</span>
+                        </div>
+                        <div>
+                            <span class="p-key">First: </span>
+                            <span class="p-value">{{entry.first}}</span>
+                        </div>
+                        <div>
+                            <span class="p-key">Last: </span>
+                            <span class="p-value">{{entry.last}}</span>
+                        </div>
+                        <div>
+                            <span class="p-key">Record Type: </span>
+                            <span class="p-value">{{entry.record_type}}</span>
+                        </div>
+                        {{#if entry.flag_title}}
+                            <div>
+                                <span class="p-key">Country: </span>
+                                <span class="p-value">{{entry.flag_title}}</span>
+                            </div>
+                        {{/if}}
+                    </div>
+                {{/each}}
+            </div>
+            {{#if (eq dns.passive_dns.length 0)}}
+                <div>
+                    <span>{{fa-icon "exclamation-circle" class="icon"}} No Passive DNS Details Available</span>
+                </div>
+            {{/if}}
+        {{/if}}
+    </div>
+{{/if}}
+{{!-- end of dns tab --}}
