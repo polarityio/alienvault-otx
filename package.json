@@ -2,7 +2,7 @@
   "main": "./integration.js",
   "name": "AlienVaultOTX",
   "description": "AlienVault OTX integration",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "private": true,
   "dependencies": {
     "request": "^2.88.2",
