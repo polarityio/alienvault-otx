@@ -2,9 +2,9 @@
 
 const request = require('request');
 const _ = require('lodash');
-const async = require('async');
 const config = require('./config/config');
 const fs = require('fs');
+const Bottleneck = require('bottleneck');
 
 let Logger;
 let requestWithDefaults;
@@ -12,6 +12,7 @@ let previousDomainRegexAsString = '';
 let previousIpRegexAsString = '';
 let domainBlocklistRegex = null;
 let ipBlocklistRegex = null;
+let limiter = null;
 
 const BASE_URI = 'https://otx.alienvault.com/api/v1/indicators';
 const MAX_DOMAIN_LABEL_LENGTH = 63;
@@ -53,33 +54,95 @@ function _setupRegexBlocklists(options) {
   }
 }
 
+function _setupLimiter(options) {
+  limiter = new Bottleneck({
+    maxConcurrent: Number.parseInt(options.maxConcurrent, 10),
+    highWater: 100, // no more than 50 lookups can be queued up
+    strategy: Bottleneck.strategy.OVERFLOW,
+    minTime: Number.parseInt(options.minTime, 10)
+  });
+}
+
 function doLookup(entities, options, cb) {
-  let lookupResults = [];
+  const lookupResults = [];
+  const errors = [];
+  let numConnectionResets = 0;
+  let numThrottled = 0;
+  let hasValidIndicator = false;
+
+  if (limiter === null) {
+    _setupLimiter(options);
+  }
 
   _setupRegexBlocklists(options);
 
-  async.each(
-    entities,
-    function(entityObj, next) {
-      if (_isInvalidEntity(entityObj) || _isEntityBlocklisted(entityObj, options)) {
-        next(null);
-      } else {
-        _lookupEntity(entityObj, options, function(err, result) {
-          if (err) {
-            next(err);
-          } else {
-            lookupResults.push(result);
-            Logger.debug({ result: result }, 'Checking the result values ');
-            next(null);
+  entities.forEach((entity) => {
+    if (!_isInvalidEntity(entity) && !_isEntityBlocklisted(entity, options)) {
+      hasValidIndicator = true;
+      limiter.submit(_lookupEntity, entity, options, 'general', (err, result) => {
+        const maxRequestQueueLimitHit =
+          (_.isEmpty(err) && _.isEmpty(result)) ||
+          (err && err.message === 'This job has been dropped by Bottleneck');
+
+        const statusCode = _.get(err, 'errors[0].status', '');
+        const isGatewayTimeout = statusCode === '502' || statusCode === '504';
+        const isConnectionReset = _.get(err, 'errors[0].meta.err.code', '') === 'ECONNRESET';
+
+        if (maxRequestQueueLimitHit || isConnectionReset || isGatewayTimeout) {
+          // Tracking for logging purposes
+          if (isConnectionReset || isGatewayTimeout) numConnectionResets++;
+          if (maxRequestQueueLimitHit) numThrottled++;
+
+          const resultObject = {
+            entity,
+            data: {
+              summary: ['Search limit reached'],
+              details: {}
+            }
+          };
+
+          resultObject.data.details['general'] = {
+            maxRequestQueueLimitHit,
+            isConnectionReset,
+            isGatewayTimeout
+          };
+
+          lookupResults.push(resultObject);
+        } else if (err) {
+          errors.push(err);
+        } else {
+          lookupResults.push(result);
+        }
+
+        if (lookupResults.length + errors.length === entities.length) {
+          if (numConnectionResets > 0 || numThrottled > 0) {
+            Logger.warn(
+              {
+                numEntitiesLookedUp: entities.length,
+                numConnectionResets: numConnectionResets,
+                numLookupsThrottled: numThrottled
+              },
+              'Lookup Limit Error'
+            );
           }
-        });
-      }
-    },
-    function(err) {
-      cb(err, lookupResults);
+          // we got all our results
+          if (errors.length > 0) {
+            cb(errors);
+          } else {
+            cb(null, lookupResults);
+          }
+        }
+      });
     }
-  );
+  });
+
+  // This can occur if there are no valid entities to lookup so we need a safe guard to make
+  // sure we still call the callback.
+  if (!hasValidIndicator) {
+    cb(null, []);
+  }
 }
+
 function _isInvalidEntity(entityObj) {
   // AlienvaultOTX API does not accept entities over 100 characters long so if we get any of those we don't look them up
   if (entityObj.value.length > MAX_ENTITY_LENGTH) {
@@ -130,12 +193,17 @@ function _isEntityBlocklisted(entityObj, options) {
   return false;
 }
 
-function _getUrl(entityObj) {
+function _getUrl(entityObj, path = 'general') {
   let otxEntityType = null;
   // map entity object type to the OTX REST API type
   switch (entityObj.type) {
     case 'domain':
-      otxEntityType = 'domain';
+      // Anything with more than 2 periods in it has a subdomain and should be treated as a hostname
+      if (entityObj.value.split('.').length >= 3) {
+        otxEntityType = 'hostname';
+      } else {
+        otxEntityType = 'domain';
+      }
       break;
     case 'hash':
       otxEntityType = 'file';
@@ -145,12 +213,12 @@ function _getUrl(entityObj) {
       break;
   }
 
-  return `${BASE_URI}/${otxEntityType}/${entityObj.value.toLowerCase()}/general`;
+  return `${BASE_URI}/${otxEntityType}/${entityObj.value.toLowerCase()}/${path}`;
 }
 
-function _getRequestOptions(entityObj, options) {
+function _getRequestOptions(entityObj, options, path = 'general') {
   return {
-    uri: _getUrl(entityObj),
+    uri: encodeURI(_getUrl(entityObj, path)),
     method: 'GET',
     headers: {
       'X-OTX-API-KEY': options.apiKey,
@@ -160,46 +228,54 @@ function _getRequestOptions(entityObj, options) {
   };
 }
 
-function _lookupEntity(entityObj, options, cb) {
-  const requestOptions = _getRequestOptions(entityObj, options);
+/**
+ *
+ * @param entityObj
+ * @param options
+ * @param path {String} endpoint to hit in alienvault ('general', 'passive_dns' etc.)
+ * @param cb
+ * @private
+ */
+function _lookupEntity(entityObj, options, path = 'general', cb) {
+  const requestOptions = _getRequestOptions(entityObj, options, path);
 
-  requestWithDefaults(requestOptions, function(err, response, body) {
+  Logger.trace('Starting lookup of ' + entityObj.value);
+  requestWithDefaults(requestOptions, function (err, response, body) {
     let errorObject = _isApiError(err, response, body, entityObj.value);
     if (errorObject) {
       cb(errorObject);
       return;
     }
 
-    if (_isLookupMiss(response, body)) {
+    Logger.trace('       Finished lookup of ' + entityObj.value);
+
+    if (_isLookupMiss(response, body, path)) {
       return cb(null, {
         entity: entityObj,
         data: null
       });
     }
 
-    Logger.debug({ body: body, entity: entityObj.value }, 'Printing out the results of Body ');
+    //Logger.debug({ body: body, entity: entityObj.value }, 'Printing out the results of Body ');
 
-    if (typeof body.pulse_info === 'undefined') {
-      Logger.error({ entity: entityObj.value }, 'Undefined pulse_info on body');
-      return cb('Undefined pulse_info on body');
-    }
-
-    if (options.pulses === true && body.pulse_info.count === 0) {
+    if (path === 'general' && options.pulses === true && body.pulse_info.count === 0) {
       return cb(null, {
         entity: entityObj,
         data: null // this entity will be cached as a miss
       });
     }
 
-    const allTags = _getPulseDiveTags(body);
-    const tags = allTags.slice(0, MAX_TAGS_IN_SUMMARY);
-    tags.unshift(body.pulse_info.count + (body.pulse_info.count === 1 ? ' pulse' : ' pulses'));
-    if(allTags.length > MAX_TAGS_IN_SUMMARY){
-      tags.push(`+${allTags.length - MAX_TAGS_IN_SUMMARY} tags`);
+    let tags = [];
+    if (path === 'general') {
+      const allTags = _getPulseDiveTags(body);
+      tags = allTags.slice(0, MAX_TAGS_IN_SUMMARY);
+      tags.unshift(body.pulse_info.count + (body.pulse_info.count === 1 ? ' pulse' : ' pulses'));
+      if (allTags.length > MAX_TAGS_IN_SUMMARY) {
+        tags.push(`+${allTags.length - MAX_TAGS_IN_SUMMARY} tags`);
+      }
     }
 
-    // The lookup results returned is an array of lookup objects with the following format
-    cb(null, {
+    const resultObject = {
       // Required: This is the entity object passed into the integration doLookup method
       entity: entityObj,
       // Required: An object containing everything you want passed to the template
@@ -207,12 +283,23 @@ function _lookupEntity(entityObj, options, cb) {
         // Required: These are the tags that are displayed in your template
         summary: tags,
         // Data that you want to pass back to the notification window details block
-        details: body
+        details: {}
       }
-    });
+    };
+
+    resultObject.data.details[path] = body;
+
+    // The lookup results returned is an array of lookup objects with the following format
+    cb(null, resultObject);
   });
 }
 
+/**
+ * Returns unique set of tags based on pulse tags
+ * @param body
+ * @returns {any[]}
+ * @private
+ */
 function _getPulseDiveTags(body) {
   const tags = new Set();
   if (Array.isArray(body.pulse_info.pulses)) {
@@ -227,13 +314,12 @@ function _getPulseDiveTags(body) {
   return [...tags];
 }
 
-function _isLookupMiss(response, body) {
+function _isLookupMiss(response, body, path) {
   return (
     response.statusCode === 404 ||
     response.statusCode === 500 ||
     response.statusCode === 400 ||
-    typeof body === 'undefined' ||
-    typeof body.pulse_info === 'undefined'
+    (path === 'general' && (typeof body === 'undefined' || typeof body.pulse_info === 'undefined'))
   );
 }
 
@@ -350,6 +436,34 @@ function _createJsonErrorObject(msg, pointer, httpCode, code, title, meta) {
   return error;
 }
 
+function onMessage(payload, options, cb) {
+  switch (payload.action) {
+    case 'RETRY_LOOKUP':
+      doLookup([payload.entity], options, (err, lookupResults) => {
+        if (err) {
+          Logger.error({ err }, 'Error retrying lookup');
+          cb(err);
+        } else {
+          cb(null, lookupResults[0]);
+        }
+      });
+      break;
+    case 'DNS_LOOKUP':
+      _lookupEntity(payload.entity, options, 'passive_dns', (err, lookupResult) => {
+        if (err) {
+          Logger.error({ err }, 'Error looking up DNS');
+          cb(err);
+        } else {
+          Logger.trace({ dns: lookupResult.data.details.passive_dns });
+          cb(null, {
+            result: lookupResult.data.details.passive_dns
+          });
+        }
+      });
+      break;
+  }
+}
+
 function startup(logger) {
   Logger = logger;
   let defaults = {};
@@ -382,7 +496,8 @@ function startup(logger) {
 }
 
 module.exports = {
-  doLookup: doLookup,
-  startup: startup,
-  validateOptions: validateOptions
+  doLookup,
+  startup,
+  onMessage,
+  validateOptions
 };
