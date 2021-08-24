@@ -41,7 +41,7 @@ module.exports = {
     // to false in a production environment.
     rejectUnauthorized: true
   },
-  logging: { level: 'trace' },
+  logging: { level: 'info' },
   options: [
     {
       key: 'apiKey',
