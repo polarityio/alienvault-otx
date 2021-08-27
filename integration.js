@@ -95,6 +95,7 @@ function doLookup(entities, options, cb) {
 
           const resultObject = {
             entity,
+            isVolatile: true,
             data: {
               summary: ['Search limit reached'],
               details: {}
