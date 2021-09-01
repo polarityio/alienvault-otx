@@ -326,10 +326,16 @@ function _isLookupMiss(response, body, path) {
 
 function _isApiError(err, response, body, entityValue) {
   if (err) {
-    return {
-      detail: 'Error executing HTTP request',
-      error: err
-    };
+    return _createJsonErrorPayload(
+      'Failed to complete HTTP Request',
+      null,
+      'NA',
+      '2A',
+      'Unable to Process Request',
+      {
+        err: err
+      }
+    );
   }
 
   if (response.statusCode === 500) {
