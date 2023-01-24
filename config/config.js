@@ -1,6 +1,7 @@
 module.exports = {
   name: 'AlienVaultOTX',
   acronym: 'AVOTX',
+  defaultColor: 'light-pink',
   description: 'Return Pulse and passive DNS information from AlienVault OTX',
   entityTypes: ['domain', 'IPv4', 'hash'],
   styles: ['./styles/otx.less'],
