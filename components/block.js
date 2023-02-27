@@ -16,7 +16,7 @@ polarity.export = PolarityComponent.extend({
     return typeof this.get('dns') !== 'undefined';
   }),
   loadingDns: false,
-  dnsErrorMessag: '',
+  dnsErrorMessage: '',
   supportsDns: Ember.computed('general.sections', function () {
     const sections = this.get('general.sections');
     return Array.isArray(sections) && sections.indexOf('passive_dns') >= 0;
@@ -34,8 +34,11 @@ polarity.export = PolarityComponent.extend({
   }),
   // Gets set on init
   maxPulses: null,
+  uniqueIdPrefix: '',
   init() {
     this.set('maxPulses', this.get('pulsesPerPage'));
+    let array = new Uint32Array(5);
+    this.set('uniqueIdPrefix', window.crypto.getRandomValues(array).join(''));
     this._super(...arguments);
   },
   actions: {
@@ -45,7 +48,7 @@ polarity.export = PolarityComponent.extend({
         this.loadDns();
       }
     },
-    refreshDns: function(){
+    refreshDns: function () {
       this.loadDns();
     },
     showMorePulses() {
@@ -69,6 +72,22 @@ polarity.export = PolarityComponent.extend({
         .finally(() => {
           this.set('running', false);
         });
+    },
+    copyData: function () {
+      const savedMaxPulses = this.get('maxPulses');
+      const savedActiveTab = this.get('activeTab');
+      const containerId = `alienvault-container-${this.get('uniqueIdPrefix')}`;
+
+      this.set('maxPulses', this.get('general.pulse_info.pulses.length'));
+
+      Ember.run.scheduleOnce('afterRender', this, this.copyElementToClipboard, containerId);
+      Ember.run.scheduleOnce(
+        'destroy',
+        this,
+        this.restoreCopyState,
+        savedActiveTab,
+        savedMaxPulses
+      );
     }
   },
   loadDns: function () {
@@ -90,5 +109,25 @@ polarity.export = PolarityComponent.extend({
       .finally(() => {
         this.set('loadingDns', false);
       });
+  },
+  copyElementToClipboard(element) {
+    window.getSelection().removeAllRanges();
+    let range = document.createRange();
+
+    range.selectNode(typeof element === 'string' ? document.getElementById(element) : element);
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+  },
+  restoreCopyState(savedActiveTab, savedMaxPulses) {
+    this.set('activeTab', savedActiveTab);
+    this.set('maxPulses', savedMaxPulses);
+    this.set('showCopyMessage', true);
+
+    setTimeout(() => {
+      if (!this.isDestroyed) {
+        this.set('showCopyMessage', false);
+      }
+    }, 2000);
   }
 });
