@@ -1,6 +1,6 @@
 {
   "name": "AlienVaultOTX",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "main": "./integration.js",
   "description": "AlienVault OTX integration",
   "private": true,
