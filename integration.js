@@ -165,6 +165,11 @@ function _isInvalidEntity(entityObj) {
     }
   }
 
+  //Ignore private IPs
+  if (entityObj.isIP && !isPublicIp(entityObj)) {
+    return true;
+  }
+
   return false;
 }
 
@@ -282,12 +287,10 @@ function _lookupEntity(entityObj, options, path = 'general', cb) {
 
     const resultObject = {
       // Required: This is the entity object passed into the integration doLookup method
-      entity: entityObj,
-      // Required: An object containing everything you want passed to the template
+      entity: entityObj, // Required: An object containing everything you want passed to the template
       data: {
         // Required: These are the tags that are displayed in your template
-        summary: tags,
-        // Data that you want to pass back to the notification window details block
+        summary: tags, // Data that you want to pass back to the notification window details block
         details: {}
       }
     };
@@ -446,6 +449,27 @@ function _createJsonErrorObject(msg, pointer, httpCode, code, title, meta) {
 
   return error;
 }
+
+const isLoopBackIp = (entity) => {
+  return entity.startsWith('127');
+};
+
+const isLinkLocalAddress = (entity) => {
+  return entity.startsWith('169');
+};
+
+const isPrivateIP = (entity) => {
+  return entity.isPrivateIP === true;
+};
+
+/**
+ * Return true if the given IP entity if public
+ * @param entity
+ * @returns {boolean} true if the entity is valid (domain or public IP), false otherwise
+ */
+const isPublicIp = (entity) => {
+  return !(isLoopBackIp(entity.value) || isLinkLocalAddress(entity.value) || isPrivateIP(entity));
+};
 
 function onMessage(payload, options, cb) {
   switch (payload.action) {
