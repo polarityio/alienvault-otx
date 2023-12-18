@@ -92,7 +92,7 @@
               <div>
                   <span class="p-key"> Validation: </span>
                   {{#each (take maxValidation general.validation) as |data|}}
-                      <span class="p-value comma-delimited-item">{{data.source}}</span>
+                      <span class="p-value p-block comma-delimited-item">{{data.source}}</span>
                   {{/each}}
                   {{#if (gt general.validation.length maxValidation)}}
                       <span class="p-footnote">(Not all validations shown)</span>
