@@ -3,7 +3,7 @@ module.exports = {
   acronym: 'AVOTX',
   defaultColor: 'light-pink',
   description: 'Return Pulse and passive DNS information from AlienVault OTX',
-  entityTypes: ['domain', 'IPv4', 'hash'],
+  entityTypes: ['domain', 'IPv4', 'MD5', 'SHA1', 'SHA256'],
   styles: ['./styles/otx.less'],
   block: {
     component: {
@@ -36,7 +36,7 @@ module.exports = {
     ca: '',
     // An HTTP proxy to be used. Supports proxy Auth with Basic Auth, identical to support for
     // the url parameter (by embedding the auth info in the uri)
-    proxy: ""
+    proxy: ''
   },
   logging: { level: 'info' },
   options: [
@@ -52,7 +52,8 @@ module.exports = {
     {
       key: 'blocklist',
       name: 'Ignored Domain List',
-      description: 'Comma delimited list of domains you do not wish to search (exact matches required).',
+      description:
+        'Comma delimited list of domains you do not wish to search (exact matches required).',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -61,8 +62,7 @@ module.exports = {
     {
       key: 'domainBlocklistRegex',
       name: 'Ignored Domain Regex',
-      description:
-        'Domains that match the given regex will not be searched.',
+      description: 'Domains that match the given regex will not be searched.',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -71,8 +71,7 @@ module.exports = {
     {
       key: 'ipBlocklistRegex',
       name: 'Ignored IP Regex',
-      description:
-        'IP Addresses that match the given regex will not be searched.',
+      description: 'IP Addresses that match the given regex will not be searched.',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -92,7 +91,7 @@ module.exports = {
       key: 'maxConcurrent',
       name: 'Max Concurrent Search Requests',
       description:
-          'Maximum number of concurrent search requests (defaults to 10).  Integration must be restarted after changing this option.',
+        'Maximum number of concurrent search requests (defaults to 10).  Integration must be restarted after changing this option.',
       default: 10,
       type: 'number',
       userCanEdit: false,
@@ -102,7 +101,7 @@ module.exports = {
       key: 'minTime',
       name: 'Minimum Time Between Searches',
       description:
-          'Minimum amount of time in milliseconds between each entity search (defaults to 25).  Integration must be restarted after changing this option.',
+        'Minimum amount of time in milliseconds between each entity search (defaults to 25).  Integration must be restarted after changing this option.',
       default: 25,
       type: 'number',
       userCanEdit: false,
