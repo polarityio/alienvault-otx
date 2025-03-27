@@ -218,6 +218,15 @@ function _getUrl(entityObj, path = 'general') {
     case 'hash':
       otxEntityType = 'file';
       break;
+    case 'MD5':
+      otxEntityType = 'file';
+      break;
+    case 'SHA1':
+      otxEntityType = 'file';
+      break;
+    case 'SHA256':
+      otxEntityType = 'file';
+      break;      
     case 'IPv4':
       otxEntityType = 'IPv4';
       break;
