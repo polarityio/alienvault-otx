@@ -4,8 +4,16 @@
   "acronym": "AVOTX",
   "defaultColor": "light-pink",
   "description": "Return Pulse and passive DNS information from AlienVault OTX",
-  "entityTypes": ["domain", "IPv4", "MD5", "SHA1", "SHA256"],
-  "styles": ["./styles/otx.less"],
+  "entityTypes": [
+    "domain",
+    "IPv4",
+    "MD5",
+    "SHA1",
+    "SHA256"
+  ],
+  "styles": [
+    "./styles/otx.less"
+  ],
   "block": {
     "component": {
       "file": "./components/block.js"
@@ -89,5 +97,10 @@
       "userCanEdit": false,
       "adminOnly": true
     }
-  ]
+  ],
+  "reducer": {
+    "details": {
+      "file": "./reducers/details.json"
+    }
+  }
 }

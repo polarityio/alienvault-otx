@@ -1,0 +1,223 @@
+{
+  "general": {
+    "indicator": "8.8.8.8",
+    "type": "IPv4",
+    "type_title": "IPv4",
+    "base_indicator": {
+      "id": 1234567890,
+      "indicator": "8.8.8.8",
+      "type": "IPv4",
+      "title": "",
+      "description": "",
+      "content": "",
+      "access_type": "public",
+      "access_reason": ""
+    },
+    "pulse_info": {
+      "count": 42,
+      "pulses": [
+        {
+          "id": "60f1234567890abcdef12345",
+          "name": "Malicious C2 Infrastructure",
+          "description": "Command and control servers associated with APT group targeting financial sector",
+          "modified": "2024-01-15T10:30:00.000Z",
+          "created": "2024-01-10T08:15:00.000Z",
+          "tags": ["apt", "c2", "financial", "banking", "malware"],
+          "references": [
+            "https://example-threat-intel.com/report/apt-campaign-2024",
+            "https://research.security.com/analysis/c2-infrastructure",
+            ""
+          ],
+          "public": 1,
+          "adversary": "APT-29",
+          "targeted_countries": ["US", "UK", "DE", "FR", "JP"],
+          "industries": ["Financial Services", "Banking", "Insurance"],
+          "TLP": "amber",
+          "pulse_source": "threat_intel_vendor",
+          "observation": {
+            "adversary": "APT-29",
+            "author_id": 789,
+            "author_name": "ThreatAnalyst",
+            "avatar_url": "/media/avatars/123.png",
+            "cloned_from": null,
+            "comment_count": 5,
+            "downvotes_count": 0,
+            "export_count": 42,
+            "follower_count": 150,
+            "groups": [],
+            "id": "60f1234567890abcdef12345",
+            "indicator_count": 23,
+            "indicator_type_counts": {
+              "IPv4": 15,
+              "domain": 5,
+              "FileHash-SHA256": 3
+            },
+            "is_author": false,
+            "is_following": 0,
+            "is_modified": false,
+            "is_subscribing": null,
+            "locked": false,
+            "modified": "2024-01-15T10:30:00.000Z",
+            "modified_text": "7 hours ago",
+            "name": "Malicious C2 Infrastructure",
+            "public": 1,
+            "pulse_source": "threat_intel_vendor",
+            "references": ["https://example-threat-intel.com/report/apt-campaign-2024"],
+            "related_indicator_is_active": 1,
+            "related_indicator_type": "IPv4",
+            "subscriber_count": 75,
+            "upvotes_count": 12,
+            "votes": 0,
+            "in_group": false,
+            "threat_hunter_scannable": true,
+            "threat_hunter_has_agents": 1
+          },
+          "malware_families": [
+            {
+              "id": "emotet",
+              "display_name": "Emotet",
+              "target": "Windows"
+            },
+            {
+              "id": "trickbot",
+              "display_name": "TrickBot",
+              "target": "Windows"
+            }
+          ],
+          "attack_ids": [
+            {
+              "id": "T1071",
+              "name": "Application Layer Protocol"
+            },
+            {
+              "id": "T1090",
+              "name": "Proxy"
+            }
+          ],
+          "groups": [
+            {
+              "id": 1234,
+              "name": "APT29",
+              "pulse_key": "60f1234567890abcdef12345"
+            }
+          ]
+        },
+        {
+          "id": "60f9876543210fedcba09876",
+          "name": "Cryptomining Infrastructure",
+          "description": "Illicit cryptocurrency mining botnet infrastructure",
+          "modified": "2024-01-14T15:45:00.000Z",
+          "created": "2024-01-05T12:00:00.000Z",
+          "tags": ["cryptomining", "botnet", "monero", "coinhive"],
+          "references": ["https://security-blog.example.com/cryptomining-campaign"],
+          "public": 1,
+          "adversary": "",
+          "targeted_countries": ["CN", "RU", "BR", "IN"],
+          "industries": [],
+          "TLP": "green",
+          "pulse_source": "automated_analysis",
+          "observation": {
+            "adversary": "",
+            "author_id": 456,
+            "author_name": "SecurityBot",
+            "avatar_url": "/media/avatars/456.png",
+            "comment_count": 2,
+            "id": "60f9876543210fedcba09876",
+            "modified": "2024-01-14T15:45:00.000Z",
+            "public": 1
+          },
+          "malware_families": [
+            {
+              "id": "xmrig",
+              "display_name": "XMRig",
+              "target": "Linux"
+            }
+          ],
+          "attack_ids": [
+            {
+              "id": "T1496",
+              "name": "Resource Hijacking"
+            }
+          ],
+          "groups": []
+        },
+        {
+          "id": "60fabcdef1234567890abcde",
+          "name": "Phishing Campaign Q1 2024",
+          "description": "Large-scale phishing campaign targeting enterprise email accounts",
+          "modified": "2024-01-13T09:20:00.000Z",
+          "created": "2024-01-12T14:30:00.000Z",
+          "tags": ["phishing", "credential-theft", "email", "social-engineering"],
+          "references": [],
+          "public": 1,
+          "adversary": "",
+          "targeted_countries": ["US", "CA", "AU", "NZ", "GB"],
+          "industries": ["Technology", "Healthcare", "Education"],
+          "TLP": "white",
+          "pulse_source": "community",
+          "observation": {
+            "author_id": 999,
+            "author_name": "CommunityContributor",
+            "id": "60fabcdef1234567890abcde",
+            "modified": "2024-01-13T09:20:00.000Z",
+            "public": 1
+          },
+          "malware_families": [],
+          "attack_ids": [
+            {
+              "id": "T1566",
+              "name": "Phishing"
+            }
+          ],
+          "groups": []
+        }
+      ],
+      "references": [],
+      "related": {
+        "alienvault": {
+          "adversary": [],
+          "malware_families": [],
+          "industries": []
+        },
+        "other": {
+          "adversary": [],
+          "malware_families": [],
+          "industries": []
+        }
+      }
+    },
+    "false_positive": [],
+    "reputation": 2,
+    "asn": "AS15169 Google LLC",
+    "city": "Mountain View",
+    "region": "California",
+    "continent_code": "NA",
+    "country_code": "US",
+    "country_name": "United States",
+    "latitude": 37.4056,
+    "longitude": -122.0775,
+    "postal_code": "94043",
+    "dma_code": 807,
+    "area_code": 650,
+    "charset": 0,
+    "accuracy_radius": 1000,
+    "flag_url": "/assets/images/flags/us.png",
+    "flag_title": "United States",
+    "validation": [
+      {
+        "source": "whitelisted",
+        "message": "Known good IP",
+        "name": "Whitelist check"
+      },
+      {
+        "source": "dns_resolver",
+        "message": "Public DNS resolver",
+        "name": "DNS validation"
+      }
+    ],
+    "whois": "https://whois.domaintools.com/8.8.8.8",
+    "alexa": "",
+    "sections": ["general", "reputation", "geo", "malware", "url_list", "passive_dns", "http_scans"],
+    "type_title": "IPv4"
+  }
+}

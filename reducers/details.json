@@ -1,0 +1,129 @@
+{
+  "root": {
+    "path": "",
+    "on_null": "return_empty"
+  },
+  "pipeline": [
+    {
+      "op": "copy",
+      "from": "general.pulse_info.count",
+      "to": "reduced_results.pulse_count"
+    },
+    {
+      "op": "copy",
+      "from": "general.pulse_info.pulses",
+      "to": "reduced_results.pulses"
+    },
+    {
+      "op": "truncate_list",
+      "path": "reduced_results.pulses",
+      "max_size": 10,
+      "shape": {
+        "reduced_results.pulses": "$truncated",
+        "reduced_results.pulses_truncated": "$was_truncated",
+        "reduced_results.total_pulses": "$original_count"
+      }
+    },
+    {
+      "op": "drop",
+      "paths": [
+        "reduced_results.pulses[].observation",
+        "reduced_results.pulses[].references",
+        "reduced_results.pulses[].public"
+      ]
+    },
+    {
+      "op": "copy",
+      "from": "general.country_name",
+      "to": "reduced_results.country_name"
+    },
+    {
+      "op": "copy",
+      "from": "general.country_code",
+      "to": "reduced_results.country_code"
+    },
+    {
+      "op": "copy",
+      "from": "general.city",
+      "to": "reduced_results.city"
+    },
+    {
+      "op": "copy",
+      "from": "general.region",
+      "to": "reduced_results.region"
+    },
+    {
+      "op": "copy",
+      "from": "general.continent_code",
+      "to": "reduced_results.continent_code"
+    },
+    {
+      "op": "copy",
+      "from": "general.latitude",
+      "to": "reduced_results.latitude"
+    },
+    {
+      "op": "copy",
+      "from": "general.longitude",
+      "to": "reduced_results.longitude"
+    },
+    {
+      "op": "copy",
+      "from": "general.asn",
+      "to": "reduced_results.asn"
+    },
+    {
+      "op": "copy",
+      "from": "general.accuracy_radius",
+      "to": "reduced_results.accuracy_radius"
+    },
+    {
+      "op": "copy",
+      "from": "general.postal_code",
+      "to": "reduced_results.postal_code"
+    },
+    {
+      "op": "copy",
+      "from": "general.dma_code",
+      "to": "reduced_results.dma_code"
+    },
+    {
+      "op": "copy",
+      "from": "general.area_code",
+      "to": "reduced_results.area_code"
+    },
+    {
+      "op": "copy",
+      "from": "general.charset",
+      "to": "reduced_results.charset"
+    },
+    {
+      "op": "copy",
+      "from": "general.flag_url",
+      "to": "reduced_results.flag_url"
+    },
+    {
+      "op": "copy",
+      "from": "general.flag_title",
+      "to": "reduced_results.flag_title"
+    },
+    {
+      "op": "copy",
+      "from": "general.reputation",
+      "to": "reduced_results.reputation"
+    },
+    {
+      "op": "copy",
+      "from": "general.validation",
+      "to": "reduced_results.validation"
+    },
+    {
+      "op": "prune",
+      "strategy": "empty_values",
+      "target": "reduced_results"
+    }
+  ],
+  "output": {
+    "result": "$working.reduced_results"
+  }
+}
